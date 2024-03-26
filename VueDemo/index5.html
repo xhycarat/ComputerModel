@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>计算机加电自检模拟</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            margin: 10px 0;
+        }
+
+        .computer {
+            border: 3px solid #333;
+            background-color: black;
+            color: white;
+            padding: 20px;
+            margin: auto;
+        }
+
+        .left, .right {
+            flex: 1;
+            text-align: center;
+        }
+
+        .part-title {
+            color: #FFD700; /* 为标题设置金色 */
+            font-weight: bold;
+        }
+
+        .blinking {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { color: white; }
+            50% { color: #777; }
+        }
+
+        @keyframes errorBlink {
+            0%, 100% { color: red; }
+            50% { color: pink; }
+        }
+
+        .errorBlinking {
+            animation: errorBlink 1s infinite;
+        }
+
+        .bios .firmware, .bios .boot-device {
+            color: white;
+            margin-top: 10px;
+        }
+
+        #firmwareAnimation, #bootDevice {
+            font-weight: bold;
+        }
+        @keyframes readPartition {
+            0% { background-color: #444; }
+            50% { background-color: #666; }
+            100% { background-color: #444; }
+        }
+
+        @keyframes loadOS {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .partition-animation {
+            animation: readPartition 2s infinite;
+            padding: 5px;
+            color: white;
+        }
+
+        .os-load-animation {
+            background-color: rgb(113, 27, 184);
+            animation: loadOS 3s forwards;
+            height: 20px;
+            width: 0%;
+            color: white;
+            text-align: center;
+        }
+        @keyframes loadKernel {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes initSystem {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .kernel-animation {
+            background-color: rgb(113, 27, 184);
+            animation: loadKernel 3s forwards;
+            height: 20px;
+            width: 0%;
+            color: white;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .system-init-animation {
+            opacity: 0;
+            animation: initSystem 3s forwards 3s;
+            color: white;
+            margin-top: 10px;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes loadSettings {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .user-interface-animation {
+            opacity: 0;
+            animation: fadeIn 2s forwards;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .settings-animation {
+            background-color: #4a90e2;
+            animation: loadSettings 4s forwards;
+            height: 20px;
+            width: 0%;
+            color: white;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .login-form {
+            background-color: #6a5acd; /* 紫色背景 */
+            padding: 20px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .login-form input[type="text"],
+        .login-form input[type="password"] {
+            margin: 10px 0;
+            padding: 10px;
+            width: calc(100% - 22px); /* 考虑到padding和border的宽度 */
+        }
+
+        .login-form label {
+            color: white;
+        }
+
+        .login-form button {
+            background-color: #f0f0f0;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 20px;
+            height: 20px;
+            animation: spin 2s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="computer">
+                <div class="left">
+                    <div class="part-title">PART 1 加电自检</div>
+                    硬件检测：<div :class="{blinking:blinking}">{{ postAnimationText }}</div>
+                </div>
+                <div class="right">
+                    错误报告：<div :class="{ errorBlinking: errorBlinking }">{{ errorReportText }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="container bios">
+            <div class="computer">
+                <div class="left">
+                    <div class="part-title">PART 2 BIOS/UEFI固件阶段</div>
+                    固件接口：<div>{{ bootDeviceText }}</div>
+                </div>
+                <div class="right">
+                    <!-- 添加按钮和悬停时显示的内容 -->
+                    <button @mouseover="showInfo = true" @mouseout="showInfo = false">x86地址规范</button>
+                    <div v-if="showInfo" class="info-content">
+                        <p data-pid="y1A0FT3y">MBR在 0 盘 0 道0扇区<b>上(最外层磁盘的最外围磁道的第一个扇区)，也就是该储存设备的第一个扇区(大小512个字节)</b>。<b>它</b>存放了用于启动操作系统的引导程序代码<b>，其实这串代码就是</b>告诉计算机去哪一个地址去找操作系统。</p>
+                        <p data-pid="809NVKgu">主引导记录由三个部分组成：</p>
+                        <ol><li data-pid="fPnUvO-R">占446个字节：<b>主引导程序（也叫</b>Boot Loader<b>），如果启动管理器grub是直接写进mbr硬盘的主引导记录中的，计算机BIOS 在启动时，按照预定的方式，</b>将MBR内的代码加载至内存指定位置， 然后跳转至那里，mbr的代码就开始运行了。</li><li data-pid="mxFCcMXB">占64个字节：记录分区表，由于硬盘可以分区，每个区可以安装不同的操作系统，所以主引导记录必须知道将控制权转交给哪个区。</li><li data-pid="jQ5mLNcK">占2个字节：主引导记录的签名（0x55和0xAA）,如果这512字节的最后两个字节是0x55和0xAA，表明这个设备可以用于启动；如果不是，表明设备不能用于启动，控制权于是被转交给"启动顺序"中的下一个设备。如果到最后还是没找到符合条件的，直接报出一个无启动区的error。</li></ol>
+                        <p data-pid="6GzZvReU">每个主分区的16个字节，由6个部分组成：</p>
+                        <ul><li data-pid="kdhic7qz">第1个字节：如果为0x80，就表示该主分区是激活分区，控制权要转交给这个分区。四个主分区里面只能有一个是激活的。</li><li data-pid="OeUrapkR">第2-4个字节：主分区第一个扇区的物理位置（柱面、磁头、扇区号等等）。</li><li data-pid="4y-ofE_3">第5个字节：主分区类型。</li><li data-pid="nVw5TsEe">第6-8个字节：主分区最后一个扇区的物理位置。</li><li data-pid="lr2VcsbZ">第9-12字节：该主分区第一个扇区的逻辑地址。</li><li data-pid="5yePHO3q">第13-16字节：主分区的扇区总数，决定了这个主分区的长度，一个主分区的扇区总数最多不超过2的32次方。。</li></ul>
+                    </div>
+                </div>
+            </div>
+        </div>               
+        <div class="container">
+            <div class="computer">
+                <div class="left">
+                    <div class="part-title">PART 3 启动加载器（Bootloader）阶段</div>
+                    引导分区读取：<div class="partition-animation">正在读取引导分区...</div>
+                    操作系统加载：<div class="os-load-animation">加载中...</div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="computer">
+                <div class="left">
+                    <div class="part-title">PART 4 操作系统加载</div>
+                    内核加载：<div class="kernel-animation">内核加载中...</div>
+                    系统初始化：<div class="system-init-animation">系统初始化中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="computer">
+            <div class="left">
+                <div class="part-title">PART 5 用户登录</div>
+                用户接口：
+                <div class="login-form" :class="{ hidden: showLoader }"> 
+                    <form @submit.prevent="handleLogin">
+                        <label for="username">用户名:</label>
+                        <input type="text" id="username" name="username">
+                        <label for="password">密码:</label>
+                        <input type="password" id="password" name="password">
+                        <button type="submit">登录</button>
+                    </form>
+                </div>
+                <div class="welcome-message" :class="{ hidden: !showLoader }">
+                    <div class="loader"></div>
+                    <span>欢迎...</span>
+                </div>
+                环境准备：<div class="settings-animation">加载用户配置...</div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                postAnimationText: '正在检测...',
+                errorReportText: '无错误',
+                blinking: true,
+                errorBlinking: false,
+                firmwareSearchComplete: false,
+                
+                postAnimationText: '正在检测...',
+                errorReportText: '无错误',
+                blinking: true,
+                errorBlinking: false,
+                bootDeviceText: '未找到启动设备',
+                showLoader: false,
+                showInfo: false,  // 用于控制悬停信息的显示
+            },
+            mounted: function() {
+                setTimeout(() => {
+                    // 停止"硬件检测"文本的闪烁动画
+                    this.blinking = false; 
+                    this.postAnimationText = '检测完成';
+                    this.errorBlinking = false;
+                }, 3000); // 3秒后模拟发现错误
+                
+                setTimeout(() => {
+                    this.errorBlinking = true; 
+                    this.errorReportText = '错误代码：0x01';
+                }, 3000); // 在另外3秒后停止闪烁，确保有足够的时间观察到闪烁效果
+
+                setTimeout(() => {
+                    this.bootDeviceText = '找到启动设备：SSD';
+                }, 5000); // 5秒后模拟找到启动设备
+            },
+            methods: {
+                handleLogin() {
+                    this.showLoader = false; // 显示加载动画和欢迎文字
+                    // 模拟登录过程
+                    setTimeout(() => {
+                        this.showLoader = true; // 假设登录过程完成，隐藏加载动画和文字
+                        // 可以在这里处理登录成功后的逻辑，例如页面跳转或显示成功消息
+                    }, 3000); // 假定登录过程需要3秒
+                }
+            }
+        });
+    </script>
+</body>
+</html>

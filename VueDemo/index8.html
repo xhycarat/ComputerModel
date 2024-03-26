@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>逻辑的计算机模型</title>
+    <script src="vue.js" type="text/javascript" charset="UTF-8"></script>
+    <style>
+        .container{
+            display: flex;
+            justify-content: space-between;/*空间平等分布*/
+            align-items: center;/*居中显示*/
+            width: 100%;
+        }
+        header{
+            display:flex;
+            align-items: center;
+            background-color:rgba(209, 144, 244, 0.774);
+            width: 280px;
+            padding: 10px 0;/*页边距*/
+            box-sizing: border-box;
+        }
+        header img{
+            width: 60px;
+            height: 60px;
+            margin-right: 10px;
+        }
+        h2{
+            text-align: center;
+            margin: 0;
+            color: rgb(102, 24, 237);
+            font-size: 20px;
+        }
+        .searchBox input[type="search"]{
+            padding: 8px 10px;
+            border: 2px solid #d6a2fe;
+            border-radius: 4px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .searchBox input[type="search"]:focus{
+            border-color: #a733ff;
+        }
+        /* 点击搜索框时的边框 */
+        .navBar{
+            display:flex;
+            justify-content: space-around;
+            background-color: #976bd5;
+            padding: 1px 0;
+        }
+        .navBar a{
+            color: #e1aaff;
+            text-decoration: none;
+            padding: 5px 20px;
+        }
+        .navBar a:hover{
+            background-color:#e8daf2;
+            color: rgb(111, 72, 125);
+        }
+        /* 鼠标移动到上面时 */
+        .mainContainer{
+            display:flex;
+            padding-top: 60px;
+            overflow-x: hidden;
+            /* 仅显示竖直滚动条 */
+            overflow-y: auto;
+        }
+        .sideBar{
+            width: 250px;
+            padding: 20px;
+            height: calc(100vh-60px);
+            margin-top: 60px;
+            background-color: #d6a2fe;
+            position: fixed;
+            left: 0;
+            box-sizing: border-box;
+        }
+        .sideBar a{
+            display: block;
+            color:#854cd5;
+            padding: 10px;
+            text-decoration: none;
+        }
+        .sideBar a:hover{
+            background-color: #ffffff;
+        }
+        .subDirectories{
+            padding-left: 20px;
+        }
+        .subDirectories a{
+            display: block;
+            margin-top: 5px;
+        }
+        .content{
+            margin-left: 270px;
+            flex-grow: 1;/*内容占剩余空间*/
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            background-repeat: repeat;
+            overflow: auto;
+        }
+        body{
+            margin:0;
+            padding: 0;
+            background-image: url(background1.jpg);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        p{
+            background-color: rgb(255, 255, 255,0.7);
+            padding: 10px;
+        }
+        button{
+            background-color: #d6a2fe;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+        }
+        button:hover{
+            background-color: #a733ff;
+        }
+        #simpsim .memory1 {
+            border: 1px solid #ccc;
+            margin-right: 20px;
+            padding: 10px;
+        }
+        #simpsim .register {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        #simpsim table {
+            border-collapse: collapse;
+        }
+        #simpsim td {
+            border: 1px solid #ccc;
+            padding: 5px;
+            width: 25px;
+            text-align: center;
+        }
+        #simpsim .memory td {
+            cursor: pointer;
+        }
+        .container1 {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            margin: 10px 0;
+        }
+        .computer {
+            border: 3px solid #333;
+            background-color: black;
+            color: white;
+            padding: 20px;
+            margin: auto;
+        }
+        .left, .right {
+            flex: 1;
+            text-align: center;
+        }
+        .part-title {
+            color: #FFD700; /* 为标题设置金色 */
+            font-weight: bold;
+        }
+        .blinking {
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { color: white; }
+            50% { color: #777; }
+        }
+        @keyframes errorBlink {
+            0%, 100% { color: red; }
+            50% { color: pink; }
+        }
+        .errorBlinking {
+            animation: errorBlink 1s infinite;
+        }
+        .bios .firmware, .bios .boot-device {
+            color: white;
+            margin-top: 10px;
+        }
+        #firmwareAnimation, #bootDevice {
+            font-weight: bold;
+        }
+        @keyframes readPartition {
+            0% { background-color: #444; }
+            50% { background-color: #666; }
+            100% { background-color: #444; }
+        }
+
+        @keyframes loadOS {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .partition-animation {
+            animation: readPartition 2s infinite;
+            padding: 5px;
+            color: white;
+        }
+
+        .os-load-animation {
+            background-color: rgb(113, 27, 184);
+            animation: loadOS 3s infinite alternate;
+            height: 20px;
+            width: 0%;
+            color: white;
+            text-align: center;
+        }
+        @keyframes loadKernel {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes initSystem {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .kernel-animation {
+            background-color: rgb(113, 27, 184);
+            animation: loadKernel 3s infinite alternate;
+            height: 20px;
+            width: 0%;
+            color: white;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .system-init-animation {
+            opacity: 0;
+            animation: initSystem 3s forwards 3s;
+            color: white;
+            margin-top: 10px;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes loadSettings {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .user-interface-animation {
+            opacity: 0;
+            animation: fadeIn 2s forwards;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .settings-animation {
+            background-color: #4a90e2;
+            animation: loadSettings 4s infinite alternate;
+            height: 20px;
+            width: 0%;
+            color: white;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .login-form {
+            background-color: #6a5acd; /* 紫色背景 */
+            padding: 20px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .login-form input[type="text"],
+        .login-form input[type="password"] {
+            margin: 10px 0;
+            padding: 10px;
+            width: calc(100% - 22px); /* 考虑到padding和border的宽度 */
+        }
+
+        .login-form label {
+            color: white;
+        }
+
+        .login-form button {
+            background-color: #f0f0f0;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 20px;
+            height: 20px;
+            animation: spin 2s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .hidden {
+            display: none;
+        }
+        #memory-segments-table table {
+        width: 100%;
+        text-align: center;
+        /* 这里的table需要找到对应处 并且加上id */
+        }
+        #memory-segments-table td {
+        padding: 10px;
+        color: white;
+        cursor: pointer;
+        }
+        .tooltip {
+        position: fixed;
+        padding: 5px 10px;
+        background-color: #000000;
+        color: white;
+        border-radius: 5px;
+        }
+        .memory-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f0f0f0;
+            margin-bottom: 20px;
+        }
+        .segment {
+            flex-grow: 1;
+            margin: 5px;
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        input[type="text"] {
+            margin: 20px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .segment.highlight {
+            border: 3px solid yellow; /* 或者任何可见的高亮效果 */
+        }
+        .memory-state {
+            margin-top: 20px;
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .memory-state div {
+            margin: 5px 0;
+        }
+        @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+        }
+        
+        
+        
+        
+        
+        
+        .codeExecutionContainer{
+            display: flex;
+            justify-content: space-between;
+        }
+        .codeInputContainer,.exampleCode{
+            flex: 1;
+            margin: 0 10px;
+        }
+        .exampleCode {
+            background-color: #ffdaf9; /* 浅灰色背景 */
+            border: 1px solid #ffffff; /* 灰色边框 */
+            border-radius: 5px; /* 圆角 */
+            padding: 10px; /* 内边距 */
+            height: 300px; /* 高度 */
+            overflow: auto; /* 自动滚动条 */
+            font-family: monospace; /* 等宽字体 */
+            color: #7c2791; /* 文本颜色 */
+            opacity: 0.5;/*透明度*/
+            font-size: 20px;
+        }
+        .editor, .example, .process, .info {
+        margin: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        }
+        textarea {
+        width: 500px;
+        height: 100px;
+        font-size: 20px;
+        }
+        .info {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .code-editor, .output, .bytecode {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            opacity: 0.7;
+            font-size: 20px;
+            text-align: left;
+        }
+        pre {
+            background-color: #f4f4f4;
+            border-left: 3px solid #723b90;
+            padding: 5px;
+            font-size: 20px;
+        }
+        .arrow, .arrow-classloader {
+            font-size: 24px;
+            margin-top: 10px;
+        }
+        
+        
+        
+        
+        
+        
+        
+        .processor-simulator {
+                width: 70%;
+                padding: 20px;
+            }
+            .processor-diagram {
+                width: 25%;
+                /* position: fixed; 移除或更改这行 */
+                margin-right: 20px; /* 替代原来的 right: 20px; */
+                margin-top: 20px; /* 替代原来的 top: 20px; */
+                padding: 20px;
+                border: 1px solid #ccc;
+            }
+            .processor-step {
+                margin-bottom: 10px;
+                padding: 10px;
+                background-color: #f0f0f0;
+                border-radius: 5px;
+            }
+            /* 以下是流程图步骤的颜色 */
+            .fetch { background-color: #adebad; }
+            .decode { background-color: #fdd5b1; }
+            .execute { background-color: #add8e6; }
+            .write-back { background-color: #f9ccca; }
+            .details {
+                margin-top: 20px;
+                padding: 10px;
+                border: 1px solid #ccc;
+            }
+            #dataBlock {
+                width: 10px;
+                height: 10px;
+                background-color: blue;
+                position: absolute;
+                animation: sendData 2s forwards;
+            }
+            #ioDevices {
+                position: relative; /* 这允许我们绝对定位内部的元素 */
+            }
+
+            #keyboard, #computer {
+                position: absolute;
+                padding: 10px;
+                border: 1px solid black;
+                background-color: lightgray;
+            }
+
+            #keyboard {
+                top: 50px; /* 调整这个位置根据你的布局 */
+                left: 20px;
+            }
+
+            #computer {
+                top: 50px; /* 保持与键盘相同的垂直位置 */
+                left: 300px; /* 根据实际布局调整 */
+            }
+            @keyframes sendData {
+                from {
+                    left: 20px; /* 键盘的左边距 */
+                    top: 50px; /* 键盘和计算机共同的顶部距离 */
+                }
+                to {
+                    left: 300px; /* 计算机的左边距 */
+                    top: 50px; /* 保持顶部距离不变 */
+                }
+            }
+            #computerSimulation {
+                width: 200px;
+                height: 150px;
+                background-color: black;
+                color: white;
+                padding: 10px;
+                position: relative;
+                margin-top: 10px; /* 添加上边距，确保与I/O操作演示有一定的间隔 */
+            }
+
+            .ioScheduler {
+                position: absolute;
+                bottom: 10px;
+                width: 100%;
+                text-align: center;
+            }
+
+            .ioRequest {
+                width: 50px;
+                height: 20px;
+                background-color: grey;
+                position: absolute;
+                left: 10px;
+                top: 10px;
+                display: none; /*隐藏*/
+                animation: requestAnimation 2s forwards;
+            }
+            #ioOperationDemo h4, #computerAndIORequests h4 {
+                margin-top: 150px;
+                text-align: left;
+            }
+
+            @keyframes requestAnimation {
+                from { left: 10px; }
+                to { left: 130px; }
+            }
+            
+            #computerAndIORequests {
+                margin-top: 20px; /* 间距 */
+            }
+            #interruptsDemo {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+            }
+
+            #interruptsDemo .device, #interruptsDemo .cpu {
+                width: 100px;
+                height: 50px;
+                background-color: lightgrey;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0 10px; 
+            }
+
+            #interruptsDemo .interruptSignal {
+                position: absolute;
+                width: 20px;
+                height: 20px;
+                background-color: red;
+                /* 初始位置应该在设备旁边 */
+                left: calc(50% - 2px); /* 设备宽度的一半减去信号宽度的一半 */
+                animation: moveInterruptSignal 2s forwards;
+            }
+
+            @keyframes moveInterruptSignal {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(200px); } /* 调整为从设备到CPU的实际距离 */
+            }
+            #dmaDemo h4, #dmaDemo p {
+                font-size: 16px;
+                color: white;
+                background-color: black;
+                padding: 10px;
+                margin: 10px 0;
+                width: fit-content;
+            }
+            @keyframes moveInterruptSignal {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(100px); } /* 根据实际距离调整 */
+            }
+            .typewriter-text {
+                display: inline-block;
+                border-right: 2px solid;
+                white-space: nowrap;
+                overflow: hidden;
+            }
+            .main-container {
+                display: flex;
+                justify-content: space-between;
+            }
+            .processor-simulator {
+                width: 70%;
+                padding: 20px;
+            }
+            
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <header>
+                <img src="logo.jpg" alt="logo">
+                <h2>{{message}}</h2>
+            </header>
+            <div class="searchBox">
+                <input type="search" v-model="searchQuery" placeholder="请输入..." autocomplete="off">
+                <button @click="performSearch">搜索</button>
+            </div>
+        </div>
+        <nav class="navBar">
+            <a href="#binaryPrinciple" @click="currentView='binaryPrinciple'">二进制原理</a>
+            <a href="#programmer"@click="currentView='programmer'">程序员视角</a>
+            <a href="#JUMP"@click="currentView='JUMP'">JUMP基本流程</a>
+            <a href="#program"@click="currentView='program'">编译运行</a>
+        </nav>
+        <div class="mainContainer">
+            <div class="sideBar">
+                <div v-if="currentView==='binaryPrinciple'">
+                    <div v-for="directory in directories" :key="directory.title">
+                        <a :href="directory.link">{{ directory.title }}</a>
+                        <div v-if="directory.children" class="subDirectories">
+                            <a v-for="child in directory.children" :key="child.title" :href="child.link">
+                                {{ child.title }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="currentView==='programmer'">
+                    <a href="#computerOpen">1.计算机加电开机的过程</a>
+                    <a href="#memoryPointingandSegmentation">2.计算机内存编指和分段</a>
+                    <a href="#processorComputingandIO">3.处理器计算和I/O的过程</a>
+                </div>
+                <div v-if="currentView==='JUMP'">
+                    <a href="#order">1.演示</a>
+                    
+                </div>
+                <div v-if="currentView==='program'">
+                    <a href="#codeRunningtimeProcess">具有运行时环境的代码运行过程</a>
+                </div>
+            </div>
+            <div class="content">
+                <div v-show="currentView==='binaryPrinciple'">
+                    <h3>二进制原理</h3>
+                    <div id="introduction">
+                        <h4>1.介绍</h4>
+                    <p>二进制<br>二进制是计算机科学中最基本的数据表示方式，使用两个符号0和1来表示所有的数据和指令。计算机的硬件电路有两种状态：通电和断电，这非常适合用二进制来表示，因此计算机内部所有的处理和存储都是以二进制形式进行的。
+                        <br><br>整数（补码）<br>
+                     在计算机中，整数可以是正数、负数或零。为了在二进制系统中表示负数，通常使用一种称为“补码”的形式。补码的主要优点是它允许加法和减法使用相同的硬件电路，并且可以将减法运算转换为加法运算。补码的计算方法是：对于一个数，首先求其二进制表示的反码（即0变1，1变0），然后加1。
+                     <br><br>浮点数原理<br>
+                     浮点数用于表示实数，可以表示非常大或非常小的数值。它们在计算机中的表示分为三个部分：符号位（表示正负）、指数位（表示范围）、尾数位（表示精度）。浮点数的表示允许在给定的位数内尽可能准确地表示各种大小的数值，但可能会引入舍入误差。
+                     <br><br>指令集设计原理<br>
+                     指令集是一组预定义的操作，计算机的CPU可以直接理解和执行这些操作。指令集的设计影响着计算机的性能、效率、能耗和编程复杂度。常见的指令集架构包括CISC（复杂指令集计算机）和RISC（精简指令集计算机）。CISC设计理念是通过硬件直接实现复杂的指令来减少指令的数量和程序的长度，而RISC设计理念是简化指令集，通过软件来实现复杂的操作，以提高CPU的执行速度。
+                    </p>
+                    </div>
+                    <div id="demonstration">
+                        <h4>2.演示</h4>
+                        <div id="integerPrinciple">
+                            <h4>(1)整数原理</h4>
+                            <input type="number" v-model="intInput" placeholder="请输入一个数">
+                            <button @click="showOriginal">显示原码</button>
+                            <button @click="showComplement">显示补码</button>
+                            <button @click="resetInteger">重置</button>
+                            <p>{{intStepDescription}}</p>
+                        </div>
+                        <div id="floatPrinciple">
+                            <h4>(2)浮点数原理</h4>
+                            <input type="text" v-model="floatInput" placeholder="请输入浮点数">
+                            <button @click="showHighest">显示阶数</button>
+                            <button @click="showExponent">显示阶码</button>
+                            <button @click="showFloatRepresentation">显示浮点数二进制</button>
+                            <button @click="resetFloat">重置</button>
+                            <p>{{floatStepDescription}}</p>
+                        </div>
+                        <div id="instructionSetPrinciple">
+                            <h4>(3)指令集设计原理</h4>
+                            <p v-if="instructionStep===0">请选择一种指令集架构：</p>
+                            <button v-if="instructionStep === 0" @click="selectArchitecture('CISC')">CISC</button>
+                            <button v-if="instructionStep === 0" @click="selectArchitecture('RISC')">RISC</button>
+                            <p v-if="instructionStep === 1">你选择了{{ selectedArchitecture }}。现在，请选择一项操作来了解它是如何执行的：</p>
+                            <button v-if="instructionStep === 1" @click="selectOperation('ADD')">ADD 操作</button>
+                            <button v-if="instructionStep === 1" @click="selectOperation('SUB')">SUB 操作</button>
+                            <p v-if="instructionStep === 2">你选择了{{ selectedOperation }}操作。这是{{ selectedArchitecture }}架构下的操作步骤：</p>
+                            <ul v-if="instructionStep === 2">
+                                <li v-for="step in operationSteps">{{ step }}</li>
+                            </ul>
+                            <button v-if="instructionStep === 2" @click="resetInstructionSet">重新开始</button>
+                            <p>寻址的展示：</p>
+                            <button @click="showAddressingMethod" v-if="!showAddressing">展示寻址过程</button>
+                            
+                            <div v-if="showAddressing">
+                                <input type="text" v-model="startAddress" placeholder="请输入起始内存地址，如0x100">
+                                <input type="text" v-model="offset" placeholder="输入偏移量，如0x20">
+                                <button @click="calculateFinalAddress">计算最终地址</button>
+                                <table border="1">
+                                    <tr>
+                                        <td v-for="(address, index) in addresses" :key="index" :style="{ backgroundColor: index === highlightIndex ? 'red' : '' }">{{ address }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <p>指令集对应关系</p>
+                            <table border="1">
+                                <tr>
+                                    <th>指令名</th>
+                                    <th>格式</th>
+                                    <th>操作码 (Opcode)</th>
+                                    <th>功能码 (Funct)</th>
+                                </tr>
+                                <tr v-for="instruction in instructions" :key="instruction.name">
+                                    <td>{{ instruction.name }}</td>
+                                    <td>{{ instruction.format }}</td>
+                                    <td>{{ instruction.opcode }}</td>
+                                    <td>{{ instruction.funct || 'N/A' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div v-show="currentView==='programmer'">
+                    <h3>以内存为中心的程序员视角的计算机模型</h3>
+                    <div class="memory1" id="simpsim">
+                        <h2>Main Memory</h2>
+                        <table id="simpsim">
+                          <tr v-for="n in 16">
+                            <td v-for="m in 16" @click="modifyMemory(n, m)" id="simpsim">
+                              {{ formatAddress(n, m) }}
+                            </td>
+                          </tr>
+                        </table>
+                    </div>
+                    <div class="register" id="simpsim">
+                        <h2>Registers</h2>
+                        <div v-for="(value, key) in registers1" :key="key">
+                          <label>{{ key }}:</label>
+                          <input v-model="registers1[key]" size="2">
+                        </div>
+                    </div>
+                    <div id="computerOpen">
+                        <h4>1.计算机加电开机的过程</h4>
+                        <div class="container1">
+                            <div class="computer">
+                                <div class="left">
+                                    <div class="part-title">PART 1 加电自检</div>
+                                    硬件检测：<div :class="{blinking:blinking}">{{ postAnimationText }}</div>
+                                </div>
+                                <div class="right">
+                                    错误报告：<div :class="{ errorBlinking: errorBlinking }">{{ errorReportText }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container1 bios">
+                            <div class="computer">
+                                <div class="left">
+                                    <div class="part-title">PART 2 BIOS/UEFI固件阶段</div>
+                                    固件接口：<div>{{ bootDeviceText }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container1">
+                            <div class="computer">
+                                <div class="left">
+                                    <div class="part-title">PART 3 启动加载器（Bootloader）阶段</div>
+                                    引导分区读取：<div class="partition-animation">正在读取引导分区...</div>
+                                    操作系统加载：<div class="os-load-animation">加载中...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container1">
+                            <div class="computer">
+                                <div class="left">
+                                    <div class="part-title">PART 4 操作系统加载</div>
+                                    内核加载：<div class="kernel-animation">内核加载中...</div>
+                                    系统初始化：<div class="system-init-animation">系统初始化中...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container1">
+                        <div class="computer">
+                            <div class="left">
+                                <div class="part-title">PART 5 用户登录</div>
+                                用户接口：
+                                <div class="login-form" :class="{ hidden: showLoader }"> 
+                                    <form @submit.prevent="handleLogin">
+                                        <label for="username">用户名:</label>
+                                        <input type="text" id="username" name="username">
+                                        <label for="password">密码:</label>
+                                        <input type="password" id="password" name="password">
+                                        <button type="submit">登录</button>
+                                    </form>
+                                </div>
+                                <div class="welcome-message" :class="{ hidden: !showLoader }">
+                                    <div class="loader"></div>
+                                    <span>欢迎...</span>
+                                </div>
+                                环境准备：<div class="settings-animation">加载用户配置...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="memoryPointingandSegmentation">
+                        <h4>2.计算机内存编指和分段</h4>
+                        <h4>(1)计算机内存分段</h4>
+                        <table id="memory-segments-table">
+                            <tr v-for="segment in memorySegments" 
+                                :key="segment.name" 
+                                :style="{ backgroundColor: segment.color }" 
+                                @mouseover="showTooltip(segment, $event)" 
+                                @mouseleave="hideTooltip">
+                            <td>{{ segment.name }}</td>
+                            </tr>
+                        </table>
+                        <div v-if="tooltip.visible" class="tooltip" :style="{ display: tooltip.visible ? 'block' : 'none' }">
+                            基址: {{ tooltip.base }}, 大小: {{ tooltip.size }}
+                        </div>
+                        <h4>(2)地址与内存段</h4>
+                        <div class="memory-container">
+                            <div v-for="segment in memorySegments"
+                                 :key="segment.name"
+                                 :class="['segment', { 'highlight': segment.highlight }]"
+                                 :style="{ backgroundColor: segment.color }">
+                                {{ segment.name }}
+                            </div>
+                        </div>
+                        
+                        <input type="text" v-model="inputAddress" placeholder="输入地址 (例如: 0x1000)" />
+                        <button @click="highlightSegment">高亮显示</button>
+                        <div id="memoryOperationsApp">
+                            <h4>内存操作演示</h4>
+                            <div>
+                              <label for="address">地址:</label>
+                              <input type="text" id="address" v-model="addressInput" placeholder="例如: 0x1000" />
+                            </div>
+                            <div>
+                              <label for="data">数据:</label>
+                              <input type="text" id="data" v-model="dataInput" placeholder="写入的数据" />
+                              <button @click="writeData">写入数据</button>
+                            </div>
+                            <div>
+                              <button @click="readData">读取数据</button>
+                            </div>
+                            <div class="memory-state">
+                              <h3>内存状态</h3>
+                              <div v-for="(value, address) in memory" :key="address">
+                                地址 {{ address }} : 数据 {{ value }}
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="processorComputingandIO">
+                        <h4>3.处理器计算和I/O的过程</h4>
+                        <h4>虚拟处理器模拟器</h4>
+                        <div>
+                            <label for="instruction-select">选择指令:</label>
+                            <select id="instruction-select" v-model="selectedInstruction">
+                                <option v-for="instruction in instructions" :value="instruction">
+                                    {{ instruction.name }}
+                                </option>
+                            </select>
+                            <button @click="executeInstruction">执行</button>
+                        </div>
+                    <div class="status-container">
+                        <h2>状态变化</h2>
+                        <div>
+                            <h3>寄存器</h3>
+                            <ul>
+                                <li v-for="(value, name) in registers">{{ name }}: {{ value }}</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3>ALU</h3>
+                            <p>最后操作结果: {{ aluResult }}</p>
+                        </div>
+                        <div>
+                            <h3>示例代码</h3>
+                            <div v-for="instruction in instructions" :key="instruction.name">
+                                <h4>{{ instruction.name }}</h4>
+                                <textarea readonly>{{ instruction.codeExample }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="virtual-processor">
+                            <!-- 虚拟处理器模拟器 -->
+                        </div>
+                        <div class="processor-diagram">
+                            <h2>处理器工作流程</h2>
+                            <div class="processor-step fetch" @mouseover="showDetails('指令获取: 从内存中读取指令')" @mouseleave="clearDetails()">指令获取</div>
+                            <div class="processor-step decode" @mouseover="showDetails('解码: 解释指令并准备所需数据')" @mouseleave="clearDetails()">解码</div>
+                            <div class="processor-step execute" @mouseover="showDetails('执行: 执行指令逻辑')" @mouseleave="clearDetails()">执行</div>
+                            <div class="processor-step write-back" @mouseover="showDetails('写回: 将结果写回寄存器')" @mouseleave="clearDetails()">写回</div>
+                            <div class="details">{{ details }}</div>
+                        </div>
+                    </div>
+                    <div id="ioOperationDemo">
+                        <h3>PART 1 I/O请求发起</h3>
+                        <!-- I/O操作 -->
+                        <button @click="startIOOperation">发送数据</button>
+                        <div id="ioDevices">
+                            <div id="keyboard">键盘</div>
+                            <div id="computer">计算机</div>
+                        </div>
+                        <div id="dataBlock" v-if="showDataBlock"></div>
+                    </div>
+                    
+                    <!-- 计算机模拟和I/O请求发起按钮 -->
+                    <div id="computerAndIORequests">
+                        <h3>PART 2 I/O调度</h3>
+                        <p>决定哪些I/O请求先执行，哪些后执行</p>
+                        <h4 style="color: white; text-align: center;">决定哪些I/O请求先执行，哪些后执行</h4>
+                        <div id="computerSimulation">
+                            <div class="ioScheduler">I/O调度器</div>
+                            <div class="ioRequest" id="request1">请求1</div>
+                            <div class="ioRequest" id="request2">请求2</div>
+                            <div class="ioRequest" id="request3">请求3</div>
+                        </div>
+                        <button @click="startIORequests">发起I/O请求</button>
+                    </div>
+                    <div id="ioExecution">
+                        <h3>PART 3 I/O执行</h3>
+                        <img src="io执行.png" alt="I/O执行示意图" height="600px" width="1000px">
+                    </div>
+                    <div id="part4">
+                        <h3>PART 4 中断和直接内存访问（DMA）</h3>
+                        <div id="interruptsDemo">
+                            <div class="device">设备</div>
+                            <div class="cpu">CPU</div>
+                            <div class="interruptSignal">中断信号</div>
+                        </div>
+                        <div id="dmaDemo">
+                            <h4>直接内存访问（DMA）</h4>
+                            <p id="dmaText">直接内存访问是一种允许外部设备直接与内存进行数据交换的技术，而无需CPU介入，可以显著提高数据传输效率。</p>
+                        </div>
+                    </div>
+                    <div id="ioCompletion">
+                        <h3>PART 5 I/O完成</h3>
+                        <button id="showCompletionDialog">模拟I/O完成</button>
+                    </div>
+                    </div>
+                </div>
+                <div v-show="currentView==='JUMP'">
+                    <h3>基于“JUMP”的代码基本流程</h3>
+                    <div class="codeExecutionContainer">
+                        <!-- 代码输入和执行 -->
+                        <div class="codeInputContainer">
+                            <h4>输入代码并执行</h4>
+                            <textarea v-model="codeInput" placeholder="请输入代码..."></textarea>
+                            <button @click="executeCode">执行代码</button>
+                        </div>
+                        <div class="exampleCode">
+                            <h4>示例代码</h4>
+                            <div v-for="example in exampleCode" :key="example.name">
+                                <p><strong>{{ example.name }}</strong></p>
+                                <pre>{{ example.code }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>寄存器状态</h4>
+                        <p v-for="(value, key) in registers" :key="key">{{ key }}: {{ value }}</p>
+                    </div>
+                        <img src="LOOP.png" alt="Loop Image" />
+                        <img src="order.png" alt="order Image" />
+                        <img src="if.png" alt="if Image" />
+                        <img src="combine.png" alt="combine Image" />
+                </div>
+                <div v-show="currentView==='program'">
+                    <h3>从高级语言到二进制代码的编译过程</h3>
+                    <div id="codeRunningtimeProcess">
+                        <h4>具有运行时环境的代码运行过程</h4>
+                    </div>
+                    <div class="editor">
+                        <textarea v-model="sourceCode" placeholder="请输入高级语言源代码..."></textarea>
+                      </div>
+                      <div class="process">
+                        <button v-for="step in compileSteps" @mouseenter="showStep(step)" @mouseleave="hideStep">{{step.name}}</button>
+                      </div>
+                      <div class="info" v-if="currentStep">
+                        {{currentStep.info}}
+                      </div>
+                      <div class="example">
+                        <textarea readonly>
+                            int main() {
+                                int a = 5;
+                                int b = a + 2;
+                                return b;
+                            }
+                        </textarea>
+                    </div>
+                    <div class="code-editor">
+                        <h2>代码输入</h2>
+                        <textarea v-model="code" placeholder="请输入Java代码..."></textarea>
+                    </div>
+                    <button @click="simulateRun">运行代码</button>
+                    <div class="output">
+                        <h2>编写源代码</h2>
+                        <pre>{{ simulatedOutput }}</pre>
+                    </div>
+                    <div v-if="showArrow" id="showArrow" class="arrow">➜ JVM</div>
+                    <div v-if="showBytecode" id="showBytecode" class="bytecode">
+                        <h2>Java字节码</h2>
+                        <pre>{{ bytecodeOutput }}</pre>
+                    </div>
+                    <div v-if="showArrowClassLoader" id="showArrowClassLoader" class="arrow-classloader">➜ ClassLoader</div>
+                    <div v-if="showClassLoader" id="showClassLoader" class="class-loader">
+                        <h2>类加载模拟</h2>
+                        <pre>{{ classLoaderOutput }}</pre>
+                    </div>
+                    <div v-if="showArrowLinking" id="showArrowLinking" class="arrow">➜ 链接</div>
+                    <div v-if="showLinking" id="showLinking" class="linking">
+                        <h2>链接过程</h2>
+                        <p>验证 -> 准备 -> 解析</p>
+                        <h3>静态变量分配内存（模拟）:</h3>
+                        <table border="1">
+                            <tr>
+                                <th>变量名</th>
+                                <th>类型</th>
+                                <th>值</th>
+                            </tr>
+                            <!-- 假设 Main 类有一个静态变量 -->
+                            <tr>
+                                <td>示例变量</td>
+                                <td>int</td>
+                                <td>0</td> <!-- 默认值 -->
+                            </tr>
+                        </table>
+                        <p>此段代码无静态变量</p>
+                    </div>
+                    <div v-if="showArrowExecution" id="showArrowExecution" class="arrow">➜ 执行阶段</div>
+                    <div v-if="showExecution" id="showExecution" class="execution">
+                        <p>JVM开始执行main方法的字节码...</p>
+                        <ul>
+                            <li>解释执行: 逐条将字节码指令转换为机器码</li>
+                            <li>即时编译(JIT): 将字节码的热点部分编译为机器码以提高效率</li>
+                        </ul>
+                        <p>执行结果：</p>
+                        <pre>{{ executionOutput }}</pre>
+                    </div>   
+                    <div v-if="showMachineCode" id="showMachineCode" class="machine-code">
+                        <h2>机器码（模拟）</h2>
+                        <pre>{{ machineCodeOutput }}</pre>
+                    </div>
+                    <div v-if="showJvmOperations" id="showJvmOperations" class="jvm-operations">
+                        <div v-if="showArrowJvmOperations" id="showArrowJvmOperations" class="arrow">➜ JVM操作</div>
+                        <p>请求JVM进行内存管理（分配对象内存、垃圾回收等）、处理异常、执行输入/输出操作等。</p>
+                        <ul>
+                            <li>为<code>String</code>对象'Hello, World!'分配内存。</li>
+                            <li>执行结束后，回收不再使用的对象内存。</li>
+                            <li>所有运行时异常都被JVM捕获，若有必要，将调用相应的异常处理程序。</li>
+                            <li>执行<code>System.out.println</code>方法，将字符串'Hello, World!'输出到控制台。</li>
+                        </ul>
+                    </div>     
+                    <div v-if="showArrowProgramExit" id="showArrowProgramExit" class="arrow">➜ 程序退出</div>   
+                    <div v-if="showProgramExit" id="showProgramExit" class="program-exit">
+                        <p>调用System.exit方法JVM终止运行。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        class Binary{
+            static toFill(value,bitSize=8){
+                if(value>=0){
+                    let binaryNumber=value.toString(2);
+                    return binaryNumber.padStart(bitSize,'0');
+                }
+                else{
+                    let positiveBinary=(-value).toString(2).padStart(bitSize,'0');
+                    let inverseBinary=positiveBinary.split('').map(bit=>bit==='0'?'1':'0').join('');
+                    let complement=(parseInt(inverseBinary,2)+1).toString(2);
+                    return complement.padStart(bitSize,'1');
+                }
+            }
+            /*fraction小数 exponent指数(阶码)*/
+            static toFloat(value,fractionBit=23,exponentBit=8){
+                let details={
+                    binaryString:'',
+                    highest:0,
+                    exponent:0,
+                };
+                if(value===0){
+                    details.binaryString='0'.repeat(fractionBit+exponentBit+1);/*符号位*/
+                    return details;
+                }
+                let nature=value>0?'0':'1';/*nature 符号位（正or负）*/
+                value=Math.abs(value);
+                let intPart=Math.floor(value);
+                let highestOne=intPart.toString(2).length-1;/*确定阶数（highest）*/
+                details.highest=highestOne;
+                let exponent=highestOne+127;/*阶码*/
+                details.exponent=exponent;
+                let exponentBinary=exponent.toString(2).padStart(exponentBit,'0');
+                let fractionPart=value-intPart;
+                let fractionBinary='';
+                while (fractionPart>0&&fractionBinary.length<fractionBit){
+                    fractionPart*=2;
+                    if(fractionPart>=1){
+                        fractionBinary+='1';
+                        fractionPart=fractionPart-1;
+                    }
+                    else{
+                        fractionBinary+='0';
+                    }
+                }
+                if(fractionPart*2>=1){
+                    fractionBinary=this.toCarry(fractionBinary);
+                }
+                details.binaryString=nature+exponentBinary+fractionBinary;
+                return details;
+            }
+            static toCarry(binaryString){
+                let carry=1;
+                let result=binaryString.split('').reverse();/*reverse为数组反转*/
+                for(let i=0;i<result.length;i++){
+                    let sum=parseInt(result[i])+carry;
+                    if(sum===2){
+                        result[i]='0';
+                        carry=1;
+                    }
+                    else{
+                        result[i]=sum.toString();
+                        carry=0;
+                        break;
+                    }
+                }
+                if(carry===1){
+                    result.push('1');/*push向数组最后添加一个元素并返回新的数组长度*/
+                }
+                let newBinary=result.reverse().join('');/*join是把一个数组的内容连起来，中间用分隔（这里''）*/
+                if(newBinary.length>fractionBit){
+                    newBinary=newBinary.substring(0,fractionBit);
+                    let exponent=parseInt(exponentBinary,2)+1;
+                    exponentBinary=exponent.toString(2).padStart(exponentBit,'0');
+                }
+                return newBinary;
+            }
+        }
+        
+        new Vue({
+            el:'#app',
+            data:{
+                currentView:'binaryPrinciple',
+                message:'逻辑的计算机模型',
+                searchQuery:'',
+                intInput:'',
+                binaryComplement:'',
+                floatRepresentation:'',
+                floatInput:'',
+                floatPart:'',
+                exponentPart:'',
+                intStepDescription:'',
+                floatStepDescription:'',
+                instructionStep:0,
+                selectedArchitecture:'',
+                selectedOperation:'',
+                operationSteps:[],
+                memoryModel:new Array(1024).fill(0),
+                showAddressing:false,
+                startAddress: '0x100', // 默认起始地址
+                offset: '0x20', // 默认偏移量
+                addresses: [],
+                highlightIndex: null, // 用于标记最终地址的索引
+                directories: [
+                    { title: "1.介绍", link: "#introduction" },
+                    {
+                        title: "2.演示",
+                        link: "#demonstration",
+                        children: [
+                            { title: "（1）整数原理", link: "#integerPrinciple" },
+                            { title: "（2）浮点数原理", link: "#floatPrinciple" },
+                            { title: "（3）指令集设计原理", link: "#instructionSetPrinciple" },
+                        ],
+                    },
+                    // 省略其他目录...
+                ],
+                instructions: [
+                    { name: 'ADD', format: 'R', opcode: '000000', funct: '100000' },
+                    { name: 'SUB', format: 'R', opcode: '000000', funct: '100010' },
+                    { name: 'ADDI', format: 'I', opcode: '001000' },
+                    // 添加更多指令...
+                ],
+                codeInput:'',
+                registers: {
+                    R0: 0,
+                    R1: 0,
+                    R2: 0,
+                    R3: 0, 
+                    // 根据需要添加更多寄存器
+                },
+                memory:{},
+                exampleCode: [ // 更新后的示例代码
+                {
+                    name: '立即数加法（ADDI）',
+                    code: `addi x1 x0 10\naddi x2 x0 5`
+                },
+                {
+                    name: '寄存器间加法（ADD）',
+                    code: `add x3 x1 x2`
+                },
+                {
+                    name: '条件分支（BEQ）',
+                    code: 'addi x1, x0, 10\naddi x2, x0, 5\nbeq x1, x2, label\naddi x3, x0, 1\nlabel:\naddi x1, x0, 0'
+                },
+                {
+                    name: '循环（LOOP with BNE）',
+                    code: 'loop:\naddi x1, x1, 1\naddi x2, x0, 5\nbne x1, x2, loop'
+                }
+                ],
+                navItems: [
+                    { title: "二进制原理", view: "binaryPrinciple" },
+                    { title: "程序员视角", view: "programmer" },
+                    { title: "JUMP基本流程", view: "JUMP" },
+                    { title: "编译运行", view: "program" },
+                    // 其他导航项...
+                ],
+                loopImageVisible: false,
+                orderImageVisible: false,
+                ifImageVisible: false,
+                combineImageVisible: false,
+                sourceCode: '',
+                currentStep: null,
+                compileSteps: [
+                    { name: '词法分析', info: '词法分析的结果示例：int, main, (, ), {, int, a, =, 5, ;, int, b, =, a, +, 2, ;, return, b, ;, }' },
+                    { name: '语法分析', info: '语法分析阶段，编译器会将词法分析的结果组装成一种结构化的表示，通常是一个抽象语法树（AST）。这棵树展示了代码的语法结构，每个节点代表了代码中的构造，如表达式、声明等。' },
+                    { name: '语义分析', info: '在语义分析阶段，编译器会检查AST中的节点是否有意义，例如变量是否已定义，类型是否兼容等。这一步确保了代码的逻辑是合法的。' },
+                    { name: '中间代码生成', info: '在这一步，编译器将AST转换成一种中间表示（IR）。IR是一种与机器无关的代码表示形式，它使得后续的优化和目标代码生成更加容易。' },
+                    { name: '代码优化', info: '编译器会对IR进行优化，以提高代码的执行效率。优化可以包括删除不必要的操作、简化计算等。' },
+                    { name: '目标代码生成', info: '编译器将优化后的IR转换为目标机器代码。这一步骤的输出是依赖于具体硬件的二进制代码或者汇编代码。' },
+                    { name: '链接', info: '如果程序包含多个源文件或者使用了外部库，编译器还需要进行链接步骤，将所有的二进制代码合并成一个可执行文件。' }
+                ],
+                code: 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}',
+                simulatedOutput: '',
+                bytecodeOutput: '',
+                classLoaderOutput: '',
+                showArrow: false,
+                showBytecode: false,
+                showArrowClassLoader: false,
+                showClassLoader: false,
+                showArrowLinking: false,
+                showLinking: false,
+                showExecution: false,
+                executionOutput: '',
+                showMachineCode: false,
+                machineCodeOutput: '',
+                showJvmOperations: false,
+                showArrowJvmOperations: false,
+                showProgramExit: false,
+                showArrowProgramExit: false,
+                showArrowExecution:false,
+                postAnimationText: '正在检测...',
+                errorReportText: '无错误',
+                blinking: true,
+                errorBlinking: false,
+                firmwareSearchComplete: false,
+                bootDeviceText: '未找到启动设备',
+                showLoader: false,
+                memorySegments: [
+                    { name: '代码段', color: '#b273f2', base: 0x0000, size: '4KB', highlight: false },
+                    { name: '数据段', color: '#7441a7', base: 0x1000, size: '3KB', highlight: false },
+                    { name: '堆栈段', color: '#48206f', base: 0x2000, size: '2KB', highlight: false },
+                    // 添加更多内存段...
+                ],
+                tooltip: {
+                visible: false,
+                base: '',
+                size: ''
+                },
+                inputAddress: '',
+                selectedInstruction: null,
+                instructions: [
+                    {
+                        name: 'Loop Addition',
+                        description: 'Adds 1 to R1, 5 times',
+                        execute: function(vm) {
+                            for (let i = 0; i < 5; i++) {
+                                vm.registers.R1 += 1;
+                            }
+                        },
+                        codeExample: 'for (let i = 0; i < 5; i++) { R1 += 1; } // Loop Addition',
+                    },
+                    {
+                        name: 'Conditional Branch',
+                        description: 'If R1 is less than 5, set R2 to 10',
+                        execute: function(vm) {
+                            if (vm.registers.R1 < 5) {
+                                vm.registers.R2 = 10;
+                            }
+                        },
+                        codeExample: 'if (R1 < 5) { R2 = 10; } // Conditional Branch',
+                    },
+                    {
+                        name: 'Countdown',
+                        description: 'Subtracts 1 from R1 until it is 0',
+                        execute: function(vm) {
+                            while (vm.registers.R1 > 0) {
+                                vm.registers.R1 -= 1;
+                            }
+                        },
+                        codeExample: 'while (R1 > 0) { R1 -= 1; } // Countdown',
+                    },
+                    {
+                        name: 'Data Movement',
+                        description: 'Move data from R1 to R2',
+                        execute: function(vm) {
+                            vm.registers.R2 = vm.registers.R1;
+                        },
+                        codeExample: 'R2 = R1; // Data Movement',
+                    },
+                ],
+                registers: {
+                    R1: 0,
+                    R2: 0,
+                    ALU: 0
+                },
+                aluResult: null,
+                details: '',
+                showDataBlock: false,
+                memory1: Array.from({ length: 256 }, () => 0),
+                registers1: {
+                'IP': '00',
+                'ACC': '00',
+                'R1': '00',
+                'R2': '00'
+                // ...可以添加更多寄存器
+                }
+            },
+            watch: {
+                startAddress(newVal, oldVal) {
+                    if (newVal !== oldVal) {
+                        this.calculateFinalAddress();
+                    }
+                },
+                offset(newVal, oldVal) {
+                    if (newVal !== oldVal) {
+                        this.calculateFinalAddress();
+                    }
+                },
+                currentView(newVal, oldVal) {
+                    console.log(`currentView changed from ${oldVal} to ${newVal}`);
+                }
+            },
+            mounted: function() {
+                setTimeout(() => {
+                    // 停止"硬件检测"文本的闪烁动画
+                    this.blinking = false; 
+                    this.postAnimationText = '检测完成';
+                    this.errorBlinking = false;
+                }, 3000); // 3秒后模拟发现错误
+                
+                setTimeout(() => {
+                    this.errorBlinking = true; 
+                    this.errorReportText = '错误代码：0x01';
+                }, 3000); // 在另外3秒后停止闪烁，确保有足够的时间观察到闪烁效果
+
+                setTimeout(() => {
+                    this.bootDeviceText = '找到启动设备：SSD';
+                }, 5000); // 5秒后模拟找到启动设备
+                this.selectedInstruction = this.instructions[0];//默认第一个
+                this.startTypeWriter();
+                this.selectedInstruction = this.instructions[0]; // 默认选择第一个指令
+                this.startTypeWriter(); // 调用打字机效果方法
+                // 绑定点击事件
+                document.getElementById('showCompletionDialog').addEventListener('click', this.simulateIOCompletion);
+            },
+            methods:{
+                searchAction:function(){
+                    alert(`搜索内容：${this.inputContent}`);
+                },
+                showFloatRepresentation(){
+                    this.floatRepresentation=Binary.toFloat(parseFloat(this.inputNumber));
+                },
+                showOriginal(){
+                    this.intStepDescription=`原码表示：${this.intInput.toString(2)}`;
+                },
+                showComplement:function(){
+                    if(this.intInput===''){
+                        alert("请输入一个整数！");
+                        return;
+                    }
+                    this.binaryComplement=Binary.toFill(parseInt(this.intInput),8);
+                    this.intStepDescription=`补码表示：${this.binaryComplement}`;
+                },
+                resetInteger:function(){
+                    this.intInput='';
+                    this.intStepDescription='';
+                    this.binaryComplement='';
+                },
+                showHighest:function(){
+                    if(!this.floatPart){
+                        this.showFloatRepresentation();
+                    }
+                    this.floatStepDescription=`整数部分的阶数是：${this.floatPart}`;
+                },
+                showExponent:function(){
+                    if (!this.exponentPart) {
+                        this.showFloatRepresentation(); 
+                    }
+                    this.floatStepDescription = `实际的阶码值（包括偏移）是：${this.exponentPart}`;
+                },
+                showFloatRepresentation:function(){
+                    if(this.floatInput===''){
+                        alert("请输入一个浮点数！");
+                        return;
+                    }
+                    const floatDetails=Binary.toFloat(parseFloat(this.floatInput));
+                    this.floatRepresentation=floatDetails.binaryString;
+                    this.floatPart=floatDetails.highest;
+                    this.exponentPart=floatDetails.exponent;
+                    this.floatStepDescription=`浮点数二进制表示：${this.floatRepresentation}`;
+                },
+                resetFloat:function(){
+                    this.floatInput='';
+                    this.floatPart='';
+                    this.exponentPart='';
+                    this.floatStepDescription='';
+                    this.floatRepresentation='';
+                },
+                selectArchitecture:function(architecture){
+                    this.selectedArchitecture=architecture;
+                    this.instructionStep=1;
+                    this.showAddressing=false;
+                },
+                selectOperation(operation){
+                    this.selectedOperation=operation;
+                    this.operationSteps=this.getOperationSteps(this.selectedArchitecture,operation);
+                    this.instructionStep=2;
+                    this.showAddressing=false;
+                },
+                getOperationSteps(architecture, operation) {
+                    if(architecture === 'CISC') {
+                        return [
+                            `解析${operation}指令`,
+                            `${operation}指令直接由硬件执行`,
+                            `返回执行结果`
+                        ];
+                    } else {
+                        return [
+                            `解析${operation}指令`,
+                            `将${operation}指令分解为更简单的操作`,
+                            `逐个执行这些简单操作`,
+                            `汇总结果并返回`
+                        ];
+                    }
+                },
+                resetInstructionSet() {
+                    this.instructionStep = 0;
+                    this.selectedArchitecture = '';
+                    this.selectedOperation = '';
+                    this.operationSteps = [];
+                },
+                showAddressingMethod(){
+                    this.showAddressing=true;
+                    this.calculateFinalAddress();
+                },
+                calculateFinalAddress() {
+                    const base = parseInt(this.startAddress, 16);
+                    const offset = parseInt(this.offset, 16);
+                    const final = base + offset;
+                    this.addresses = Array.from({ length: 20 }, (_, i) => `0x${(base + i * 16).toString(16).toUpperCase()}`);
+                    this.highlightIndex = this.addresses.findIndex(addr => parseInt(addr, 16) === final);
+                },
+                executeCode() {
+                    // 初始化寄存器
+                    this.registers = {
+                        R0: 0,
+                        R1: 0,
+                        R2: 0,
+                        R3: 0,
+                    };
+
+                    // 映射标签到行号
+                    let labels = {};
+
+                    // 预处理：标记所有的标签和它们对应的行号
+                    const lines = this.codeInput.trim().split('\n');
+                    lines.forEach((line, index) => {
+                        if (line.endsWith(':')) { // 如果行以冒号结束，表示这是一个标签
+                            const label = line.slice(0, -1); // 移除冒号，获取标签名
+                            labels[label] = index; // 记录标签对应的行号
+                        }
+                    });
+
+                    // 执行代码
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i];
+                        const parts = line.split(/\s+/);
+                        if (parts.length < 3 || line.endsWith(':')) continue; // 跳过标签定义或格式不正确的行
+
+                        const instr = parts[0].toUpperCase();
+                        const dest = this.mapRegisterName(parts[1]);
+                        const src1 = parts.length > 2 ? this.mapRegisterName(parts[2]) : null;
+                        const src2_or_imm = parts.length > 3 ? isNaN(parts[3]) ? this.mapRegisterName(parts[3]) : parseInt(parts[3]) : null;
+
+                        switch (instr) {
+                            case 'ADDI':
+                                this.registers[dest] = this.registers[src1] + (isNaN(src2_or_imm) ? this.registers[src2_or_imm] : src2_or_imm);
+                                break;
+                            case 'ADD':
+                                this.registers[dest] = this.registers[src1] + this.registers[src2_or_imm];
+                                break;
+                            case 'BEQ':
+                                if (this.registers[dest] === this.registers[src1]) {
+                                    i = labels[src2_or_imm]; // 跳转到标签位置
+                                }
+                                break;
+                            case 'BNE':
+                                if (this.registers[dest] !== this.registers[src1]) {
+                                    i = labels[src2_or_imm]; // 跳转到标签位置
+                                }
+                                break;
+                        }
+                    }
+
+                    // 更新Vue的响应式状态
+                    this.registers = { ...this.registers };
+                },
+
+                mapRegisterName(name) {
+                    if (name.startsWith('x')) {
+                        return 'R' + parseInt(name.substring(1), 10);
+                    }
+                    return name;
+                },
+
+                performSearch() {
+                    const searchTerm = this.searchQuery.trim().toLowerCase();
+                    const matchedItem = this.navItems.find(item => item.title.toLowerCase().includes(searchTerm));
+                    if (matchedItem) {
+                        this.currentView = matchedItem.view; // 设置视图为匹配项的 view 值
+                    } else {
+                        alert("未找到匹配的页面");
+                    }
+                },
+                showStep(step) {
+                this.currentStep = step;
+                },
+                hideStep() {
+                this.currentStep = null;
+                },
+                simulateRun() {
+                    this.resetSimulation();
+                    let index = 0;
+                    const sourceCode = this.code;
+                    // 开始逐字显示源代码
+                    const typingInterval = setInterval(() => {
+                        if (index < sourceCode.length) {
+                            this.simulatedOutput += sourceCode.charAt(index);
+                            index++;
+                        } else {
+                            clearInterval(typingInterval); // 完成源代码显示
+                            this.showArrow = true; // 显示指向JVM的箭头
+                            this.$nextTick(() => this.scrollIntoView('showArrow'));
+                            // 设置显示字节码的延时
+                            setTimeout(() => {
+                                this.bytecodeOutput = 'Compiled from "Main.java"\npublic class Main {\n  public Main();\n    Code:\n       0: aload_0\n       1: invokespecial #1                  // Method java/lang/Object."<init>":()V\n       4: return\n\n  public static void main(java.lang.String[]);\n    Code:\n       0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;\n       3: ldc           #3                  // String Hello, World!\n       5: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V\n       8: return\n}';
+                                this.showBytecode = true; // 确保字节码部分显示
+                                this.$nextTick(() => this.scrollIntoView('showBytecode'));
+                                // 设置显示指向ClassLoader的箭头的延时
+                                setTimeout(() => {
+                                    this.showArrowClassLoader = true; // 显示指向ClassLoader的箭头
+                                    this.$nextTick(() => this.scrollIntoView('showArrowClassLoader'));
+                                    // 设置显示类加载信息的延时
+                                    setTimeout(() => {
+                                        this.classLoaderOutput = '正在加载Main类...';
+                                        this.showClassLoader = true; // 显示类加载信息
+                                        this.$nextTick(() => this.scrollIntoView('showClassLoader'));
+                                        setTimeout(() => {
+                                            this.showArrowLinking = true;
+                                            this.$nextTick(() => this.scrollIntoView('showArrowLinking'));
+                                            setTimeout(() => {
+                                                this.showLinking = true;
+                                                this.$nextTick(() => this.scrollIntoView('showLinking'));
+                                                setTimeout(() => {
+                                                    this.showArrowExecution=true;
+                                                    this.showExecution = true;
+                                                    // 模拟执行输出
+                                                    this.executionOutput = 'Hello, World!';
+                                                    this.$nextTick(() => this.scrollIntoView('showExecution'));                                                        
+                                                        // 接下来模拟机器码的显示
+                                                        setTimeout(() => {
+                                                            this.showMachineCode = true;
+                                                            // 生成模拟的机器码，这里使用随机二进制序列作为示例
+                                                            this.machineCodeOutput = this.generateMockMachineCode();
+                                                            this.$nextTick(() => this.scrollIntoView('showMachineCode')); 
+                                                            setTimeout(() => {
+                                                                this.showArrowJvmOperations = true;
+                                                                this.$nextTick(() => this.scrollIntoView('showArrowJvmOperations')); 
+                                                                setTimeout(() => {
+                                                                    this.showJvmOperations = true;
+                                                                    this.$nextTick(() => this.scrollIntoView('showJvmOperations')); 
+                                                                    // 接下来模拟程序退出阶段
+                                                                    setTimeout(() => {
+                                                                        this.showArrowProgramExit = true;
+                                                                        this.$nextTick(() => this.scrollIntoView('showArrowProgramExit'));
+                                                                        setTimeout(() => {
+                                                                            this.showProgramExit = true;
+                                                                            this.$nextTick(() => this.scrollIntoView('showArrowProgramExit'));
+                                                                        }, 500); // 延迟显示程序退出信息
+                                                                    }, 1000); // 延迟显示程序退出箭头
+                                                                }, 500); // 延迟显示JVM操作信息
+                                                            }, 3500);
+                                                        }, 500); // 延迟显示机器码
+                                                    }, 3000); // 调整延迟时间以适应前面的步骤
+                                            }, 500); // 链接过程的展示稍微延后于箭头显示
+                                        }, 2000); // 根据需要调整时间
+                                    
+                                    }, 500); // 延迟显示类加载信息
+                                }, 1000); // 延迟显示指向ClassLoader的箭头
+                            }, 500); // 延迟显示字节码
+                        }
+                    }, 50); // 逐字显示代码的速度
+                },
+
+                resetSimulation() {
+                    this.simulatedOutput = '';
+                    this.bytecodeOutput = '';
+                    this.classLoaderOutput = '';
+                    this.showArrow = false;
+                    this.showBytecode = false;
+                    this.showArrowClassLoader = false;
+                    this.showClassLoader = false;
+                    this.showArrowLinking = false;
+                    this.showLinking = false;
+                    this.showExecution = false;
+                    this.executionOutput = '';
+                    this.showMachineCode = false;
+                    this.machineCodeOutput = '';
+                    this.showJvmOperations = false;
+                    this.showArrowJvmOperations = false;
+                    this.showProgramExit = false;
+                    this.showArrowProgramExit = false;
+                    this.showArrowExecution=false;
+                },
+                generateMockMachineCode() {
+                    let mockCode = '';
+                    for (let i = 0; i < 100; i++) {
+                        mockCode += Math.round(Math.random()) ? '1' : '0';
+                        if (i % 8 === 7) mockCode += ' '; // 每8位添加一个空格，模拟字节间隔
+                    }
+                    return mockCode;
+                },
+                scrollIntoView(id) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }
+                },
+                handleLogin() {
+                    this.showLoader = false; // 显示加载动画和欢迎文字
+                    // 模拟登录过程
+                    setTimeout(() => {
+                        this.showLoader = true; // 假设登录过程完成，隐藏加载动画和文字
+                        // 可以在这里处理登录成功后的逻辑，例如页面跳转或显示成功消息
+                    }, 3000); // 假定登录过程需要3秒
+                },
+                showTooltip(segment, event) {
+                    this.tooltip.base = segment.base;
+                    this.tooltip.size = segment.size;
+                    this.tooltip.visible = true;
+                    
+                    // 确保Vue已经更新了DOM
+                    this.$nextTick(() => {
+                        // 选择tooltip元素
+                        const tooltipElement = document.querySelector('.tooltip');
+                        if (tooltipElement) {
+                            // 显示tooltip
+                            tooltipElement.style.display = 'block';
+                            // 动态计算并设置tooltip的位置
+                            let left = event.clientX + 10; // 在鼠标右侧10px的位置
+                            let top = event.clientY + 10; // 在鼠标下方10px的位置
+
+                            // 防止tooltip超出屏幕边界
+                            const tooltipWidth = tooltipElement.offsetWidth;
+                            const tooltipHeight = tooltipElement.offsetHeight;
+                            if (left + tooltipWidth > window.innerWidth) {
+                                left = window.innerWidth - tooltipWidth - 20; // 向左调整
+                            }
+                            if (top + tooltipHeight > window.innerHeight) {
+                                top = window.innerHeight - tooltipHeight - 20; // 向上调整
+                            }
+                            
+                            // 应用计算后的位置
+                            tooltipElement.style.left = `${left}px`;
+                            tooltipElement.style.top = `${top}px`;
+                        }
+                    });
+                },
+
+                hideTooltip() {
+                    this.tooltip.visible = false;
+                    this.$nextTick(() => {
+                        const tooltipElement = document.querySelector('.tooltip');
+                        if (tooltipElement) {
+                            tooltipElement.style.display = 'none'; // 隐藏tooltip
+                        }
+                    });
+                },
+                highlightSegment() {
+                    const address = parseInt(this.inputAddress, 16);
+                    this.memorySegments.forEach(segment => {
+                        const endAddress = segment.base + this.convertSizeToBytes(segment.size);
+                        segment.highlight = address >= segment.base && address < endAddress;
+                    });
+                },
+                convertSizeToBytes(size) {
+                    const unit = size.match(/[a-zA-Z]+/)[0];
+                    const value = parseInt(size, 10);
+                    switch (unit) {
+                        case 'KB':
+                            return value * 1024;
+                        case 'MB':
+                            return value * 1024 * 1024;
+                        // 添加其他单位的转换逻辑...
+                        default:
+                            return value;
+                    }
+                },
+                writeData() {
+                const address = this.addressInput.trim();
+                const data = this.dataInput.trim();
+                if (!address || !data) {
+                    alert('请填写地址和数据。');
+                    return;
+                }
+                // 写入数据到内存
+                this.$set(this.memory, address, data);
+                // 清空输入
+                this.addressInput = '';
+                this.dataInput = '';
+                },
+                readData() {
+                const address = this.addressInput.trim();
+                if (!address) {
+                    alert('请填写地址。');
+                    return;
+                }
+                // 从内存读取数据
+                const data = this.memory[address];
+                alert(`地址 ${address} 的数据是: ${data ? data : '无数据'}`);
+                },
+                executeInstruction() {
+                    if (this.selectedInstruction && typeof this.selectedInstruction.execute === 'function') {
+                        this.selectedInstruction.execute(this);
+                        // 假设指令执行后需要更新ALU的结果，这里只是一个例子，实际上你可能需要根据不同的指令来更新不同的状态
+                        // 这里直接用R1的值作为ALU操作的示例结果，根据你的逻辑可能需要调整
+                        this.aluResult = this.registers.R1;
+                    }
+                },
+                showDetails(detail) {
+                    this.details = detail;
+                },
+                clearDetails() {
+                    this.details = '';
+                },
+                startIOOperation() {
+                    const ioDevicesElement = document.getElementById('ioDevices');
+                    const dataBlockElement = document.createElement('div');
+                    dataBlockElement.id = 'dataBlock';
+                    dataBlockElement.style.width = '10px';
+                    dataBlockElement.style.height = '10px';
+                    dataBlockElement.style.backgroundColor = 'blue';
+                    dataBlockElement.style.position = 'absolute';
+                    
+                    // 添加到DOM
+                    ioDevicesElement.appendChild(dataBlockElement)
+                    // 动画完成后移除
+                    setTimeout(() => {
+                        dataBlockElement.remove();
+                    }, 2000);
+                },
+                startIORequests() {
+                    // 示意发起多个I/O请求，并通过CSS动画表示它们被调度的过程
+                    const requests = document.querySelectorAll('.ioRequest');
+                    requests.forEach((request, index) => {
+                        // 将请求元素显示出来
+                        request.style.display = 'block';
+                        // 设置动画延迟来模拟调度过程
+                        let animationDelay = `${index * 1}s`;
+                        request.style.animation = `requestAnimation 2s ${animationDelay} forwards`;
+                    });
+                },
+                startTypeWriter() {
+                    const dmaText = "直接内存访问是一种允许外部设备直接与内存进行数据交换的技术，而无需CPU介入，可以显著提高数据传输效率。";
+                    const dmaTextElement = document.getElementById('dmaText');
+                    let index = 0;
+                    function typeWriter() {
+                        if (index < dmaText.length) {
+                            dmaTextElement.innerHTML += dmaText.charAt(index);
+                            index++;
+                            setTimeout(typeWriter, 50); // 调整打字速度
+                        }
+                    }
+                    typeWriter();
+                },
+                simulateIOCompletion() {
+                    alert("I/O操作完成！");
+                },
+                formatAddress(n, m) {
+                return this.memory1[(n - 1) * 16 + (m - 1)].toString().padStart(2, '0').toUpperCase();
+                },
+                modifyMemory(n, m) {
+                let addr = (n - 1) * 16 + (m - 1);
+                let newVal = prompt(`Enter new value for address ${addr.toString(16).toUpperCase()}:`, this.memory[addr]);
+                if (newVal !== null && !isNaN(parseInt(newVal, 16)) && parseInt(newVal, 16) < 256) {
+                    this.$set(this.memory1, addr, parseInt(newVal, 16));
+                }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

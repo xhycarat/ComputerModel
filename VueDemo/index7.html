@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>CPU模拟器</title>
+    <style>
+        .main-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .simulator {
+            width: 70%;
+            padding: 20px;
+        }
+        .diagram {
+            width: 25%;
+            margin-right: 20px;
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+        .step {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .code-example {
+            margin-top: 20px;
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="cpu-simulator">
+        <h1>CPU模拟器</h1>
+        <div class="main-container">
+            <div class="simulator">
+                <div>
+                    <label for="instruction-select">选择指令:</label>
+                    <select id="instruction-select" v-model="selectedInstruction">
+                        <option v-for="instruction in instructions" :value="instruction">
+                            {{ instruction.name }}
+                        </option>
+                    </select>
+                    <button @click="executeInstruction">执行</button>
+                </div>
+                
+                <div class="status-container">
+                    <h2>状态变化</h2>
+                    <div>
+                        <h3>寄存器</h3>
+                        <ul>
+                            <li v-for="(value, name) in registers">{{ name }}: {{ value }}</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>最后操作结果</h3>
+                        <p>{{ aluResult }}</p>
+                    </div>
+                </div>
+
+                <div class="code-example">
+                    <h3>示例代码</h3>
+                    <pre>{{ selectedInstruction ? selectedInstruction.codeExample : '请选择一条指令以查看示例代码。' }}</pre>
+                </div>
+            </div>
+            <div class="diagram">
+                <h2>处理器结构</h2>
+                <p>这里可以展示一个简化的处理器结构图，帮助理解CPU的内部工作原理。</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="vue.js"></script>
+    <script>
+        new Vue({
+            el: '#cpu-simulator',
+            data: {
+                selectedInstruction: null,
+                instructions: [
+                    // 示例指令
+                    {
+                        name: '加法操作',
+                        execute: function(vm) {
+                            vm.registers.R1 += 1;
+                        },
+                        codeExample: 'R1 += 1; // 加法操作',
+                    },
+                    {
+                        name: '条件分支',
+                        execute: function(vm) {
+                            if (vm.registers.R1 < 5) {
+                                vm.registers.R2 = 10;
+                            }
+                        },
+                        codeExample: 'if (R1 < 5) { R2 = 10; } // 条件分支',
+                    },
+                ],
+                registers: {
+                    R1: 0,
+                    R2: 0,
+                },
+                aluResult: null,
+            },
+            methods: {
+                executeInstruction() {
+                    if (this.selectedInstruction && typeof this.selectedInstruction.execute === 'function') {
+                        this.selectedInstruction.execute(this);
+                        this.aluResult = `R1: ${this.registers.R1}, R2: ${this.registers.R2}`;
+                    }
+                },
+            }
+        });
+    </script>
+</body>
+</html>

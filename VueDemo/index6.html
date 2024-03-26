@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>逻辑的计算机模型</title>
+    <script src="vue.js" type="text/javascript" charset="UTF-8"></script>
+    <style>
+        .container{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        header{
+            display:flex;
+            align-items: center;
+            background-color:rgba(209, 144, 244, 0.774);
+            width: 280px;
+            padding: 10px 0;/*页边距*/
+            box-sizing: border-box;
+        }
+        header img{
+            width: 60px;
+            height: 60px;
+            margin-right: 10px;
+        }
+        h2{
+            font-family:'Times New Roman', Times, serif;
+            text-align: center;
+            margin: 0;
+            color: rgb(102, 24, 237);
+        }
+        .searchBox input[type="search"]{
+            padding: 8px 10px;
+            border: 2px solid #d6a2fe;
+            border-radius: 4px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .searchBox input[type="search"]:focus{
+            border-color: #a733ff;
+        }
+        .navBar{
+            display:flex;
+            justify-content: space-around;
+            background-color: #854cd5;
+            padding: 1px 0;
+        }
+        .navBar a{
+            color: #e1aaff;
+            text-decoration: none;
+            padding: 5px 20px;
+        }
+        .navBar a:hover{
+            background-color:#a733ff;
+            color: black;
+        }
+        .content{
+            margin-left: 270px;
+            flex-grow: 1;/*内容占剩余空间*/
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            background-repeat: repeat;
+        }
+        .mainContainer{
+            display:flex;
+            padding-top: 60px;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        .sideBar{
+            width: 250px;
+            padding: 20px;
+            height: calc(100vh-60px);
+            margin-top: 60px;
+            background-color: #d6a2fe;
+            position: fixed;
+            left: 0;
+            box-sizing: border-box;
+        }
+        .sideBar a{
+            display: block;
+            color:#854cd5;
+            padding: 10px;
+            text-decoration: none;
+        }
+        .sideBar a:hover{
+            background-color: #ffffff;
+        }
+        p{
+            background-color: rgb(255, 255, 255,0.7);
+            padding: 10px;
+        }
+        button{
+            background-color: #d6a2fe;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+        }
+        button:hover{
+            background-color: #a733ff;
+        }
+        .subDirectories{
+            padding-left: 20px;
+        }
+        .subDirectories a{
+            display: block;
+            margin-top: 5px;
+        }
+        body{
+            margin:0;
+            padding: 0;
+            background-image: url(background1.jpg);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .codeExecutionContainer{
+            display: flex;
+            justify-content: space-between;
+        }
+        .codeInputContainer,.exampleCode{
+            flex: 1;
+            margin: 0 10px;
+        }
+        .exampleCode {
+            background-color: #ffdaf9; /* 浅灰色背景 */
+            border: 1px solid #ffffff; /* 灰色边框 */
+            border-radius: 5px; /* 圆角 */
+            padding: 10px; /* 内边距 */
+            height: 300px; /* 高度 */
+            overflow: auto; /* 自动滚动条 */
+            font-family: monospace; /* 等宽字体 */
+            color: #7c2791; /* 文本颜色 */
+            opacity: 0.5;/*透明度*/
+            font-size: 20px;
+        }
+        .editor, .example, .process, .info {
+        margin: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        }
+        textarea {
+        width: 300px;
+        height: 100px;
+        }
+        .info {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <header>
+                <img src="logo.jpg" alt="logo">
+                <h2>{{message}}</h2>
+            </header>
+            <div class="searchBox">
+                <input type="search" v-model="searchQuery" placeholder="请输入..." autocomplete="off">
+                <button @click="performSearch">搜索</button>
+            </div>
+        </div>
+        <nav class="navBar">
+            <a href="#binaryPrinciple" @click="currentView='binaryPrinciple'">二进制原理</a>
+            <a href="#programmer"@click="currentView='programmer'">程序员视角</a>
+            <a href="#JUMP"@click="currentView='JUMP'">JUMP基本流程</a>
+            <a href="#program"@click="currentView='program'">编译运行</a>
+        </nav>
+        <div class="mainContainer">
+            <div class="sideBar">
+                <div v-if="currentView==='binaryPrinciple'">
+                    <div v-for="directory in directories" :key="directory.title">
+                        <a :href="directory.link">{{ directory.title }}</a>
+                        <div v-if="directory.children" class="subDirectories">
+                            <a v-for="child in directory.children" :key="child.title" :href="child.link">
+                                {{ child.title }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="currentView==='programmer'">
+                    <a href="#computerOpen">1.计算机加电开机的过程</a>
+                    <a href="#memoryPointingandSegmentation">2.计算机内存编指和分段</a>
+                    <a href="#processorComputingandIO">3.处理器计算和I/O的过程</a>
+                </div>
+                <div v-if="currentView==='JUMP'">
+                    <a href="#order">1.演示</a>
+                    
+                </div>
+                <div v-if="currentView==='program'">
+                    <a href="#codeRunningtimeProcess">具有运行时环境的代码运行过程</a>
+                </div>
+            </div>
+            <div class="content">
+                <div v-show="currentView==='binaryPrinciple'">
+                    <h3>二进制原理</h3>
+                    <div id="introduction">
+                        <h4>1.介绍</h4>
+                    <p>二进制<br>二进制是计算机科学中最基本的数据表示方式，使用两个符号0和1来表示所有的数据和指令。计算机的硬件电路有两种状态：通电和断电，这非常适合用二进制来表示，因此计算机内部所有的处理和存储都是以二进制形式进行的。
+                        <br><br>整数（补码）<br>
+                     在计算机中，整数可以是正数、负数或零。为了在二进制系统中表示负数，通常使用一种称为“补码”的形式。补码的主要优点是它允许加法和减法使用相同的硬件电路，并且可以将减法运算转换为加法运算。补码的计算方法是：对于一个数，首先求其二进制表示的反码（即0变1，1变0），然后加1。
+                     <br><br>浮点数原理<br>
+                     浮点数用于表示实数，可以表示非常大或非常小的数值。它们在计算机中的表示分为三个部分：符号位（表示正负）、指数位（表示范围）、尾数位（表示精度）。浮点数的表示允许在给定的位数内尽可能准确地表示各种大小的数值，但可能会引入舍入误差。
+                     <br><br>指令集设计原理<br>
+                     指令集是一组预定义的操作，计算机的CPU可以直接理解和执行这些操作。指令集的设计影响着计算机的性能、效率、能耗和编程复杂度。常见的指令集架构包括CISC（复杂指令集计算机）和RISC（精简指令集计算机）。CISC设计理念是通过硬件直接实现复杂的指令来减少指令的数量和程序的长度，而RISC设计理念是简化指令集，通过软件来实现复杂的操作，以提高CPU的执行速度。
+                    </p>
+                    </div>
+                    <div id="demonstration">
+                        <h4>2.演示</h4>
+                        <div id="integerPrinciple">
+                            <h4>(1)整数原理</h4>
+                            <input type="number" v-model="intInput" placeholder="请输入一个数">
+                            <button @click="showOriginal">显示原码</button>
+                            <button @click="showComplement">显示补码</button>
+                            <button @click="resetInteger">重置</button>
+                            <p>{{intStepDescription}}</p>
+                        </div>
+                        <div id="floatPrinciple">
+                            <h4>(2)浮点数原理</h4>
+                            <input type="text" v-model="floatInput" placeholder="请输入浮点数">
+                            <button @click="showHighest">显示阶数</button>
+                            <button @click="showExponent">显示阶码</button>
+                            <button @click="showFloatRepresentation">显示浮点数二进制</button>
+                            <button @click="resetFloat">重置</button>
+                            <p>{{floatStepDescription}}</p>
+                        </div>
+                        <div id="instructionSetPrinciple">
+                            <h4>(3)指令集设计原理</h4>
+                            <p v-if="instructionStep===0">请选择一种指令集架构：</p>
+                            <button v-if="instructionStep === 0" @click="selectArchitecture('CISC')">CISC</button>
+                            <button v-if="instructionStep === 0" @click="selectArchitecture('RISC')">RISC</button>
+                            <p v-if="instructionStep === 1">你选择了{{ selectedArchitecture }}。现在，请选择一项操作来了解它是如何执行的：</p>
+                            <button v-if="instructionStep === 1" @click="selectOperation('ADD')">ADD 操作</button>
+                            <button v-if="instructionStep === 1" @click="selectOperation('SUB')">SUB 操作</button>
+                            <p v-if="instructionStep === 2">你选择了{{ selectedOperation }}操作。这是{{ selectedArchitecture }}架构下的操作步骤：</p>
+                            <ul v-if="instructionStep === 2">
+                                <li v-for="step in operationSteps">{{ step }}</li>
+                            </ul>
+                            <button v-if="instructionStep === 2" @click="resetInstructionSet">重新开始</button>
+                            <p>寻址的展示：</p>
+                            <button @click="showAddressingMethod" v-if="!showAddressing">展示寻址过程</button>
+                            
+                            <div v-if="showAddressing">
+                                <input type="text" v-model="startAddress" placeholder="请输入起始内存地址，如0x100">
+                                <input type="text" v-model="offset" placeholder="输入偏移量，如0x20">
+                                <button @click="calculateFinalAddress">计算最终地址</button>
+                                <table border="1">
+                                    <tr>
+                                        <td v-for="(address, index) in addresses" :key="index" :style="{ backgroundColor: index === highlightIndex ? 'red' : '' }">{{ address }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <p>指令集对应关系</p>
+                            <table border="1">
+                                <tr>
+                                    <th>指令名</th>
+                                    <th>格式</th>
+                                    <th>操作码 (Opcode)</th>
+                                    <th>功能码 (Funct)</th>
+                                </tr>
+                                <tr v-for="instruction in instructions" :key="instruction.name">
+                                    <td>{{ instruction.name }}</td>
+                                    <td>{{ instruction.format }}</td>
+                                    <td>{{ instruction.opcode }}</td>
+                                    <td>{{ instruction.funct || 'N/A' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div v-show="currentView==='programmer'">
+                    <h3>以内存为中心的程序员视角的计算机模型</h3>
+                    <div id="computerOpen">
+                        <h4>1.计算机加电开机的过程</h4>
+                    </div>
+                    <div id="memoryPointingandSegmentation">
+                        <h4>2.计算机内存编指和分段</h4>
+                    </div>
+                    <div id="processorComputingandIO">
+                        <h4>3.处理器计算和I/O的过程</h4>
+                    </div>
+                </div>
+                <div v-show="currentView==='JUMP'">
+                    <h3>基于“JUMP”的代码基本流程</h3>
+                    <div class="codeExecutionContainer">
+                        <!-- 代码输入和执行 -->
+                        <div class="codeInputContainer">
+                            <h4>输入代码并执行</h4>
+                            <textarea v-model="codeInput" placeholder="请输入代码..."></textarea>
+                            <button @click="executeCode">执行代码</button>
+                        </div>
+                        <!-- 示例代码展示 -->
+                        <div class="exampleCode">
+                            <h4>示例代码</h4>
+                            <div v-for="example in exampleCode" :key="example.name">
+                                <p><strong>{{ example.name }}</strong></p>
+                                <pre>{{ example.code }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>寄存器状态</h4>
+                        <p v-for="(value, key) in registers" :key="key">{{ key }}: {{ value }}</p>
+                    </div>
+                    <div v-if="loopImageVisible">
+                        <img src="LOOP.png" alt="Loop Image" />
+                    </div>
+                    <div v-if="orderImageVisible">
+                        <img src="order.png" alt="order Image" />
+                    </div>
+                    <div v-if="ifImageVisible">
+                        <img src="if.png" alt="if Image" />
+                    </div>
+                    <div v-if="combineImageVisible">
+                        <img src="combine.png" alt="combine Image" />
+                    </div>
+                </div>
+                <div v-show="currentView==='program'">
+                    <h3>从高级语言到二进制代码的编译过程</h3>
+                    <div id="codeRunningtimeProcess">
+                        <h4>具有运行时环境的代码运行过程</h4>
+                    </div>
+                    <div class="editor">
+                        <textarea v-model="sourceCode" placeholder="请输入高级语言源代码..."></textarea>
+                      </div>
+                      <div class="process">
+                        <button v-for="step in compileSteps" @mouseenter="showStep(step)" @mouseleave="hideStep">{{step.name}}</button>
+                      </div>
+                      <div class="info" v-if="currentStep">
+                        {{currentStep.info}}
+                      </div>
+                      <div class="example">
+                        <textarea readonly>
+                    int main() {
+                        int a = 5;
+                        int b = a + 2;
+                        return b;
+                    }
+                        </textarea>
+                      </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        class Binary{
+            static toFill(value,bitSize=8){
+                if(value>=0){
+                    let binaryNumber=value.toString(2);
+                    return binaryNumber.padStart(bitSize,'0');
+                }
+                else{
+                    let positiveBinary=(-value).toString(2).padStart(bitSize,'0');
+                    let inverseBinary=positiveBinary.split('').map(bit=>bit==='0'?'1':'0').join('');
+                    let complement=(parseInt(inverseBinary,2)+1).toString(2);
+                    return complement.padStart(bitSize,'1');
+                }
+            }
+            /*fraction小数 exponent指数(阶码)*/
+            static toFloat(value,fractionBit=23,exponentBit=8){
+                let details={
+                    binaryString:'',
+                    highest:0,
+                    exponent:0,
+                };
+                if(value===0){
+                    details.binaryString='0'.repeat(fractionBit+exponentBit+1);/*符号位*/
+                    return details;
+                }
+                let nature=value>0?'0':'1';/*nature 符号位（正or负）*/
+                value=Math.abs(value);
+                let intPart=Math.floor(value);
+                let highestOne=intPart.toString(2).length-1;/*确定阶数（highest）*/
+                details.highest=highestOne;
+                let exponent=highestOne+127;/*阶码*/
+                details.exponent=exponent;
+                let exponentBinary=exponent.toString(2).padStart(exponentBit,'0');
+                let fractionPart=value-intPart;
+                let fractionBinary='';
+                while (fractionPart>0&&fractionBinary.length<fractionBit){
+                    fractionPart*=2;
+                    if(fractionPart>=1){
+                        fractionBinary+='1';
+                        fractionPart=fractionPart-1;
+                    }
+                    else{
+                        fractionBinary+='0';
+                    }
+                }
+                if(fractionPart*2>=1){
+                    fractionBinary=this.toCarry(fractionBinary);
+                }
+                details.binaryString=nature+exponentBinary+fractionBinary;
+                return details;
+            }
+            static toCarry(binaryString){
+                let carry=1;
+                let result=binaryString.split('').reverse();/*reverse为数组反转*/
+                for(let i=0;i<result.length;i++){
+                    let sum=parseInt(result[i])+carry;
+                    if(sum===2){
+                        result[i]='0';
+                        carry=1;
+                    }
+                    else{
+                        result[i]=sum.toString();
+                        carry=0;
+                        break;
+                    }
+                }
+                if(carry===1){
+                    result.push('1');/*push向数组最后添加一个元素并返回新的数组长度*/
+                }
+                let newBinary=result.reverse().join('');/*join是把一个数组的内容连起来，中间用分隔（这里''）*/
+                if(newBinary.length>fractionBit){
+                    newBinary=newBinary.substring(0,fractionBit);
+                    let exponent=parseInt(exponentBinary,2)+1;
+                    exponentBinary=exponent.toString(2).padStart(exponentBit,'0');
+                }
+                return newBinary;
+            }
+        }
+        new Vue({
+            el:'#app',
+            data:{
+                currentView:'binaryPrinciple',
+                message:'逻辑的计算机模型',
+                searchQuery:'',
+                intInput:'',
+                binaryComplement:'',
+                floatRepresentation:'',
+                floatInput:'',
+                floatPart:'',
+                exponentPart:'',
+                intStepDescription:'',
+                floatStepDescription:'',
+                instructionStep:0,
+                selectedArchitecture:'',
+                selectedOperation:'',
+                operationSteps:[],
+                memoryModel:new Array(1024).fill(0),
+                showAddressing:false,
+                startAddress: '0x100', // 默认起始地址
+                offset: '0x20', // 默认偏移量
+                addresses: [],
+                highlightIndex: null, // 用于标记最终地址的索引
+                directories: [
+                    { title: "1.介绍", link: "#introduction" },
+                    {
+                        title: "2.演示",
+                        link: "#demonstration",
+                        children: [
+                            { title: "（1）整数原理", link: "#integerPrinciple" },
+                            { title: "（2）浮点数原理", link: "#floatPrinciple" },
+                            { title: "（3）指令集设计原理", link: "#instructionSetPrinciple" },
+                        ],
+                    },
+                    // 省略其他目录...
+                ],
+                instructions: [
+                    { name: 'ADD', format: 'R', opcode: '000000', funct: '100000' },
+                    { name: 'SUB', format: 'R', opcode: '000000', funct: '100010' },
+                    { name: 'ADDI', format: 'I', opcode: '001000' },
+                    // 添加更多指令...
+                ],
+                codeInput:'',
+                registers: {
+                    R0: 0,
+                    R1: 0,
+                    R2: 0,
+                    R3: 0, 
+                    // 根据需要添加更多寄存器
+                },
+                memory:{},
+                exampleCode: [ // 更新后的示例代码
+                {
+                    name: '立即数加法（ADDI）',
+                    code: `addi x1 x0 10\naddi x2 x0 5`
+                },
+                {
+                    name: '寄存器间加法（ADD）',
+                    code: `add x3 x1 x2`
+                },
+                {
+                    name: '条件分支（BEQ）',
+                    code: 'addi x1, x0, 10\naddi x2, x0, 5\nbeq x1, x2, label\naddi x3, x0, 1\nlabel:\naddi x1, x0, 0'
+                },
+                {
+                    name: '循环（LOOP with BNE）',
+                    code: 'loop:\naddi x1, x1, 1\naddi x2, x0, 5\nbne x1, x2, loop'
+                }
+                ],
+                navItems: [
+                    { title: "二进制原理", view: "binaryPrinciple" },
+                    { title: "程序员视角", view: "programmer" },
+                    { title: "JUMP基本流程", view: "JUMP" },
+                    { title: "编译运行", view: "program" },
+                    // 其他导航项...
+                ],
+                loopImageVisible: false,
+                orderImageVisible: false,
+                ifImageVisible: false,
+                combineImageVisible: false,
+                sourceCode: '',
+                currentStep: null,
+                compileSteps: [
+                    { name: '词法分析', info: '词法分析的结果示例：int, main, (, ), {, int, a, =, 5, ;, int, b, =, a, +, 2, ;, return, b, ;, }' },
+                    { name: '语法分析', info: '语法分析阶段，编译器会将词法分析的结果组装成一种结构化的表示，通常是一个抽象语法树（AST）。这棵树展示了代码的语法结构，每个节点代表了代码中的构造，如表达式、声明等。' },
+                    { name: '语义分析', info: '在语义分析阶段，编译器会检查AST中的节点是否有意义，例如变量是否已定义，类型是否兼容等。这一步确保了代码的逻辑是合法的。' },
+                    { name: '中间代码生成', info: '在这一步，编译器将AST转换成一种中间表示（IR）。IR是一种与机器无关的代码表示形式，它使得后续的优化和目标代码生成更加容易。' },
+                    { name: '代码优化', info: '编译器会对IR进行优化，以提高代码的执行效率。优化可以包括删除不必要的操作、简化计算等。' },
+                    { name: '目标代码生成', info: '编译器将优化后的IR转换为目标机器代码。这一步骤的输出是依赖于具体硬件的二进制代码或者汇编代码。' },
+                    { name: '链接', info: '如果程序包含多个源文件或者使用了外部库，编译器还需要进行链接步骤，将所有的二进制代码合并成一个可执行文件。' }
+                ]
+            },
+            watch: {
+                startAddress(newVal, oldVal) {
+                    if (newVal !== oldVal) {
+                        this.calculateFinalAddress();
+                    }
+                },
+                offset(newVal, oldVal) {
+                    if (newVal !== oldVal) {
+                        this.calculateFinalAddress();
+                    }
+                },
+                currentView(newVal, oldVal) {
+                    console.log(`currentView changed from ${oldVal} to ${newVal}`);
+                }
+            },
+            methods:{
+                searchAction:function(){
+                    alert(`搜索内容：${this.inputContent}`);
+                },
+                showFloatRepresentation(){
+                    this.floatRepresentation=Binary.toFloat(parseFloat(this.inputNumber));
+                },
+                showOriginal(){
+                    this.intStepDescription=`原码表示：${this.intInput.toString(2)}`;
+                },
+                showComplement:function(){
+                    if(this.intInput===''){
+                        alert("请输入一个整数！");
+                        return;
+                    }
+                    this.binaryComplement=Binary.toFill(parseInt(this.intInput),8);
+                    this.intStepDescription=`补码表示：${this.binaryComplement}`;
+                },
+                resetInteger:function(){
+                    this.intInput='';
+                    this.intStepDescription='';
+                    this.binaryComplement='';
+                },
+                showHighest:function(){
+                    if(!this.floatPart){
+                        this.showFloatRepresentation();
+                    }
+                    this.floatStepDescription=`整数部分的阶数是：${this.floatPart}`;
+                },
+                showExponent:function(){
+                    if (!this.exponentPart) {
+                        this.showFloatRepresentation(); 
+                    }
+                    this.floatStepDescription = `实际的阶码值（包括偏移）是：${this.exponentPart}`;
+                },
+                showFloatRepresentation:function(){
+                    if(this.floatInput===''){
+                        alert("请输入一个浮点数！");
+                        return;
+                    }
+                    const floatDetails=Binary.toFloat(parseFloat(this.floatInput));
+                    this.floatRepresentation=floatDetails.binaryString;
+                    this.floatPart=floatDetails.highest;
+                    this.exponentPart=floatDetails.exponent;
+                    this.floatStepDescription=`浮点数二进制表示：${this.floatRepresentation}`;
+                },
+                resetFloat:function(){
+                    this.floatInput='';
+                    this.floatPart='';
+                    this.exponentPart='';
+                    this.floatStepDescription='';
+                    this.floatRepresentation='';
+                },
+                selectArchitecture:function(architecture){
+                    this.selectedArchitecture=architecture;
+                    this.instructionStep=1;
+                    this.showAddressing=false;
+                },
+                selectOperation(operation){
+                    this.selectedOperation=operation;
+                    this.operationSteps=this.getOperationSteps(this.selectedArchitecture,operation);
+                    this.instructionStep=2;
+                    this.showAddressing=false;
+                },
+                getOperationSteps(architecture, operation) {
+                    if(architecture === 'CISC') {
+                        return [
+                            `解析${operation}指令`,
+                            `${operation}指令直接由硬件执行`,
+                            `返回执行结果`
+                        ];
+                    } else {
+                        return [
+                            `解析${operation}指令`,
+                            `将${operation}指令分解为更简单的操作`,
+                            `逐个执行这些简单操作`,
+                            `汇总结果并返回`
+                        ];
+                    }
+                },
+                resetInstructionSet() {
+                    this.instructionStep = 0;
+                    this.selectedArchitecture = '';
+                    this.selectedOperation = '';
+                    this.operationSteps = [];
+                },
+                showAddressingMethod(){
+                    this.showAddressing=true;
+                    this.calculateFinalAddress();
+                },
+                calculateFinalAddress() {
+                    const base = parseInt(this.startAddress, 16);
+                    const offset = parseInt(this.offset, 16);
+                    const final = base + offset;
+                    this.addresses = Array.from({ length: 20 }, (_, i) => `0x${(base + i * 16).toString(16).toUpperCase()}`);
+                    this.highlightIndex = this.addresses.findIndex(addr => parseInt(addr, 16) === final);
+                },
+                executeCode() {
+                    // 初始化寄存器
+                    this.registers = {
+                        R0: 0,
+                        R1: 0,
+                        R2: 0,
+                        R3: 0,
+                    };
+
+                    // 映射标签到行号
+                    let labels = {};
+
+                    // 预处理：标记所有的标签和它们对应的行号
+                    const lines = this.codeInput.trim().split('\n');
+                    lines.forEach((line, index) => {
+                        if (line.endsWith(':')) { // 如果行以冒号结束，表示这是一个标签
+                            const label = line.slice(0, -1); // 移除冒号，获取标签名
+                            labels[label] = index; // 记录标签对应的行号
+                        }
+                    });
+
+                    // 执行代码
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i];
+                        const parts = line.split(/\s+/);
+                        if (parts.length < 3 || line.endsWith(':')) continue; // 跳过标签定义或格式不正确的行
+
+                        const instr = parts[0].toUpperCase();
+                        const dest = this.mapRegisterName(parts[1]);
+                        const src1 = parts.length > 2 ? this.mapRegisterName(parts[2]) : null;
+                        const src2_or_imm = parts.length > 3 ? isNaN(parts[3]) ? this.mapRegisterName(parts[3]) : parseInt(parts[3]) : null;
+
+                        switch (instr) {
+                            case 'ADDI':
+                                this.registers[dest] = this.registers[src1] + (isNaN(src2_or_imm) ? this.registers[src2_or_imm] : src2_or_imm);
+                                break;
+                            case 'ADD':
+                                this.registers[dest] = this.registers[src1] + this.registers[src2_or_imm];
+                                break;
+                            case 'BEQ':
+                                if (this.registers[dest] === this.registers[src1]) {
+                                    i = labels[src2_or_imm]; // 跳转到标签位置
+                                }
+                                break;
+                            case 'BNE':
+                                if (this.registers[dest] !== this.registers[src1]) {
+                                    i = labels[src2_or_imm]; // 跳转到标签位置
+                                }
+                                break;
+                        }
+                    }
+
+                    // 更新Vue的响应式状态
+                    this.registers = { ...this.registers };
+                },
+
+                mapRegisterName(name) {
+                    if (name.startsWith('x')) {
+                        return 'R' + parseInt(name.substring(1), 10);
+                    }
+                    return name;
+                },
+
+                performSearch() {
+                    const searchTerm = this.searchQuery.trim().toLowerCase();
+                    const matchedItem = this.navItems.find(item => item.title.toLowerCase().includes(searchTerm));
+                    if (matchedItem) {
+                        this.currentView = matchedItem.view; // 设置视图为匹配项的 view 值
+                    } else {
+                        alert("未找到匹配的页面");
+                    }
+                },
+                showStep(step) {
+                this.currentStep = step;
+                },
+                hideStep() {
+                this.currentStep = null;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

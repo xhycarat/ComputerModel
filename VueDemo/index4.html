@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>虚拟处理器模拟器</title>
+        <link rel="stylesheet" href="style.css">
+        <style>
+            .main-container {
+                display: flex;
+                justify-content: space-between;
+            }
+            .processor-simulator {
+                width: 70%;
+                padding: 20px;
+            }
+            .processor-diagram {
+                width: 25%;
+                /* position: fixed; 移除或更改这行 */
+                margin-right: 20px; /* 替代原来的 right: 20px; */
+                margin-top: 20px; /* 替代原来的 top: 20px; */
+                padding: 20px;
+                border: 1px solid #ccc;
+            }
+            .processor-step {
+                margin-bottom: 10px;
+                padding: 10px;
+                background-color: #f0f0f0;
+                border-radius: 5px;
+            }
+
+
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <h1>虚拟处理器模拟器</h1>
+            <div>
+                <label for="instruction-select">选择指令:</label>
+                <select id="instruction-select" v-model="selectedInstruction">
+                    <option v-for="instruction in instructions" :value="instruction">
+                        {{ instruction.name }}
+                    </option>
+                </select>
+                <button @click="executeInstruction">执行</button>
+            </div>
+        
+            <div class="status-container">
+                <h2>状态变化</h2>
+                <div>
+                    <h3>寄存器</h3>
+                    <ul>
+                        <li v-for="(value, name) in registers">{{ name }}: {{ value }}</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>ALU</h3>
+                    <p>最后操作结果: {{ aluResult }}</p>
+                </div>
+                <div>
+                    <h3>示例代码</h3>
+                    <!-- 显示所有指令的示例代码 -->
+                    <div v-for="instruction in instructions" :key="instruction.name">
+                        <h4>{{ instruction.name }}</h4>
+                        <textarea readonly>{{ instruction.codeExample }}</textarea>
+                    </div>
+                </div>
+            </div>
+            
+        
+                                    
+        </div>        
+    <script src="vue.js" type="text/javascript" charset="UTF-8"></script>      
+    <script>
+      
+      new Vue({
+    el: '#app',
+    data: {
+        selectedInstruction: null,
+        instructions: [
+            {
+                name: 'Loop Addition',
+                description: 'Adds 1 to R1, 5 times',
+                execute: function(vm) {
+                    for (let i = 0; i < 5; i++) {
+                        vm.registers.R1 += 1;
+                    }
+                },
+                codeExample: 'for (let i = 0; i < 5; i++) { R1 += 1; } // Loop Addition',
+            },
+            {
+                name: 'Conditional Branch',
+                description: 'If R2 is less than 5, set R1 to 10',
+                execute: function(vm) {
+                    if (vm.registers.R2 < 5) {
+                        vm.registers.R1 = 10;
+                    }
+                },
+                codeExample: 'if (R2 < 5) { R1 = 10; } // Conditional Branch',
+            },
+            {
+                name: 'Data Movement',
+                description: 'Move data from R1 to R2',
+                execute: function(vm) {
+                    vm.registers.R2 = vm.registers.R1;
+                },
+                codeExample: 'R2 = R1; // Data Movement',
+            },
+        ],
+        registers: {
+            R1: 0,
+            R2: 0,
+        },
+        aluResult: null,
+        details: '',
+    },
+    mounted() {
+        this.selectedInstruction = this.instructions[0];//默认第一个
+        this.startTypeWriter();
+        this.selectedInstruction = this.instructions[0]; // 默认选择第一个指令
+        this.startTypeWriter(); // 调用打字机效果方法
+        // 绑定点击事件
+        document.getElementById('showCompletionDialog').addEventListener('click', this.simulateIOCompletion);
+    },
+    methods: {
+        executeInstruction() {
+            if (this.selectedInstruction && typeof this.selectedInstruction.execute === 'function') {
+                this.selectedInstruction.execute(this);
+                // 假设指令执行后需要更新ALU的结果，这里只是一个例子，实际上你可能需要根据不同的指令来更新不同的状态
+                // 这里直接用R1的值作为ALU操作的示例结果，根据你的逻辑可能需要调整
+                this.aluResult = this.registers.R1;
+            }
+        },
+        showDetails(detail) {
+            this.details = detail;
+        },
+        clearDetails() {
+            this.details = '';
+        },
+        
+    }
+});
+      </script>
+</body>
+</html>

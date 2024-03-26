@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>计算机加电自检模拟</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace; /* 使用等宽字体 */
+            background-color: #f0f0f0; /* 页面背景色，此处使用浅灰色 */
+        }
+    
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* 修改为 flex-start，以便容器内的项目从容器的顶部开始 */
+            margin: 10px 0; /* 添加上下边距以便在容器之间留出一些空间，但不会过多 */
+        }
+    
+        .computer {
+            border: 3px solid #333; /* 计算机模型的边框 */
+            background-color: black; /* 计算机模型的背景色 */
+            color: white; /* 计算机模型内的文字颜色 */
+            padding: 20px;
+            margin: auto; /* 居中显示 */
+        }
+    
+        .left, .right {
+            flex: 1;
+            text-align: center;
+        }
+        
+        /* 保留之前的闪烁动画 */
+        .blinking {
+            animation: blink 1s infinite;
+        }
+    
+        @keyframes blink {
+            0%, 100% { color: white; }
+            50% { color: #777; } /* 调整为浅灰色以在黑色背景上产生闪烁效果 */
+        }
+        /* 错误报告的闪烁动画 */
+        @keyframes errorBlink {
+            0%, 100% { color: red; }
+            50% { color: pink; } /* 使用粉红色来减少对比，实现闪烁效果 */
+        }
+
+        .errorBlinking {
+            animation: errorBlink 1s infinite;
+        }
+        .bios .firmware, .bios .boot-device {
+            color: white; /* 文字颜色为白色 */
+            margin-top: 10px; /* 上边距 */
+        }
+    
+        #firmwareAnimation, #bootDevice {
+            font-weight: bold;
+        }
+    </style>
+    
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="computer">
+                <div class="left">
+                    硬件检测：<div>{{ postAnimationText }}</div>
+                </div>
+                <div class="right">
+                    错误报告：<div>{{ errorReportText }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="container bios">
+            <div class="computer">
+                <div class="firmware">
+                    固件接口：<div>{{ bootDeviceText }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 引入Vue 2 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                postAnimationText: '正在检测...',
+                errorReportText: '无错误',
+                blinking: true,
+                errorBlinking: false,
+                firmwareSearchComplete: false,
+                bootDeviceText: '未找到启动设备',
+            },
+            mounted: function() {
+                setTimeout(() => {
+                    this.postAnimationText = '检测完成';
+                    this.errorReportText = '错误代码：0x01';
+                }, 3000); // 3秒后模拟发现错误
+                
+                setTimeout(() => {
+                    this.bootDeviceText = '找到启动设备：SSD';
+                }, 5000); // 5秒后模拟找到启动设备
+            }
+        });
+    </script>
+</body>
+</html>
+
