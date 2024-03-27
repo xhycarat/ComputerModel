@@ -44,7 +44,7 @@
     <td>演示具有运行时环境（如JRE）的代码运行过程（动态）</td>
     <td>√</td>
   </tr>
-  <table>
+  <table border="1">
     <tr>
       <th>拓展</th>
       <th>完成情况</th>
